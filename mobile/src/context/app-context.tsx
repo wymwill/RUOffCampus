@@ -36,7 +36,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [usingFallback, setUsingFallback] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
-  const [favoriteRowByListingId, setFavoriteRowByListingId] = useState<Map<string, string>>(new Map());
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [authMessage, setAuthMessage] = useState('');
@@ -114,7 +113,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       previousAccessToken.current = accessToken;
 
       if (!accessToken) {
-        setFavoriteRowByListingId(new Map());
         if (hadToken) {
           setFavoriteIds(new Set());
         }
@@ -126,7 +124,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const rows = await fetchFavorites(accessToken);
         if (cancelled) return;
         setFavoriteIds(new Set(rows.map((r) => r.listing_id)));
-        setFavoriteRowByListingId(new Map(rows.map((r) => [r.listing_id, r.id])));
         setAuthMessage('');
       } catch (error) {
         if (cancelled) return;
@@ -155,23 +152,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       try {
         if (favoriteIds.has(id)) {
-          let favoriteRowId = favoriteRowByListingId.get(id);
-          if (!favoriteRowId) {
-            const rows = await fetchFavorites(accessToken);
-            const nextMap = new Map(rows.map((r) => [r.listing_id, r.id]));
-            setFavoriteIds(new Set(rows.map((r) => r.listing_id)));
-            setFavoriteRowByListingId(nextMap);
-            favoriteRowId = nextMap.get(id);
-          }
-          if (!favoriteRowId) return;
-          await removeFavorite(favoriteRowId, accessToken);
+          await removeFavorite(id, accessToken);
           setFavoriteIds((prev) => {
             const next = new Set(prev);
-            next.delete(id);
-            return next;
-          });
-          setFavoriteRowByListingId((prev) => {
-            const next = new Map(prev);
             next.delete(id);
             return next;
           });
@@ -180,19 +163,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
 
         try {
-          const created = await addFavorite(id, accessToken);
+          await addFavorite(id, accessToken);
           setFavoriteIds((prev) => new Set([...prev, id]));
-          setFavoriteRowByListingId((prev) => {
-            const next = new Map(prev);
-            next.set(id, created.id);
-            return next;
-          });
         } catch (error) {
           const message = error instanceof Error ? error.message : '';
           if (message.toLowerCase().includes('already in favorites')) {
             const rows = await fetchFavorites(accessToken);
             setFavoriteIds(new Set(rows.map((r) => r.listing_id)));
-            setFavoriteRowByListingId(new Map(rows.map((r) => [r.listing_id, r.id])));
           } else {
             throw error;
           }
@@ -202,7 +179,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setAuthMessage(error instanceof Error ? error.message : 'Could not update favorites.');
       }
     },
-    [accessToken, favoriteIds, favoriteRowByListingId]
+    [accessToken, favoriteIds]
   );
 
   const createListing = useCallback(
@@ -226,11 +203,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setListings((prev) => prev.filter((listing) => listing.id !== id));
       setFavoriteIds((prev) => {
         const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-      setFavoriteRowByListingId((prev) => {
-        const next = new Map(prev);
         next.delete(id);
         return next;
       });

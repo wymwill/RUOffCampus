@@ -163,8 +163,9 @@ export async function addFavorite(listingId: string, accessToken: string): Promi
   };
 }
 
-export async function removeFavorite(favoriteRowId: string, accessToken: string): Promise<void> {
-  const response = await fetch(`${getApiBaseUrl()}/listings/favorites/${favoriteRowId}`, {
+// The API deletes favorites by listing id, not by favorite row id.
+export async function removeFavorite(listingId: string, accessToken: string): Promise<void> {
+  const response = await fetch(`${getApiBaseUrl()}/listings/favorites/${encodeURIComponent(listingId)}`, {
     method: 'DELETE',
     headers: {
       ...buildAuthHeaders(accessToken),
