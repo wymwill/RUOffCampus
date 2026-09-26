@@ -177,3 +177,50 @@ export async function removeFavoriteListing(listingId, options = {}) {
 
   return data;
 }
+
+async function requestJson(path, { method = "GET", body, accessToken, fallbackError }) {
+  const response = await fetchWithTimeout(`${getListingsApiBase()}${path}`, {
+    method,
+    headers: {
+      ...(body ? { "Content-Type": "application/json" } : {}),
+      ...buildAuthHeaders(accessToken),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = response.status === 204 ? null : await parseJsonResponse(response);
+
+  if (!response.ok) {
+    const err = new Error(typeof data?.error === "string" ? data.error : fallbackError);
+    err.status = response.status;
+    throw err;
+  }
+
+  return data;
+}
+
+/** GET /listings/mine — every listing the signed in user hosts, including paused and taken ones. */
+export async function getMyListings(options = {}) {
+  const data = await requestJson("/listings/mine", {
+    accessToken: options.accessToken,
+    fallbackError: "Could not load your listings.",
+  });
+  return Array.isArray(data) ? data : [];
+}
+
+/** PUT /listings/:id — only fields the host may edit are applied by the API. */
+export async function updateListing(listingId, updates, options = {}) {
+  return requestJson(`/listings/${encodeURIComponent(listingId)}`, {
+    method: "PUT",
+    body: updates,
+    accessToken: options.accessToken,
+    fallbackError: "Could not update listing.",
+  });
+}
+
+export async function deleteListing(listingId, options = {}) {
+  await requestJson(`/listings/${encodeURIComponent(listingId)}`, {
+    method: "DELETE",
+    accessToken: options.accessToken,
+    fallbackError: "Could not delete listing.",
+  });
+}

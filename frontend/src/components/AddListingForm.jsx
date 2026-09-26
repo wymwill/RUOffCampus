@@ -2,13 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import CardDescription from "./CardDescription";
 import ListingImageGallery from "./ListingImageGallery";
 import Sidebar from "./Sidebar";
-import { createListing, getListingsAccessToken } from "../api/listingsApi";
+import { createListing, getListingsAccessToken, updateListing } from "../api/listingsApi";
 import { useAuth } from "../context/AuthContext";
 import { MAX_LISTING_IMAGES, filesToListingImages } from "../utils/imageUtils";
 import { geocodeAddressToNearestCampus } from "../utils/locationUtils";
 import { normalizeListing } from "../utils/listingUtils";
 import { addOwnedListingId } from "../utils/listingOwnershipCache";
 import { prefillOwnSublet } from "../utils/prefillOwnSublet";
+import { listingToFormData } from "../utils/listingForm";
 
 const defaultFormState = {
   title: "",
@@ -44,16 +45,28 @@ const defaultLocationState = {
 /**
  * Full listing composer: form, live preview, and POST to /listings on submit.
  * On success calls onCreated with a normalized listing (includes server id when returned).
+ * Pass initialListing to edit an existing listing instead. Saving then PUTs to
+ * /listings/:id and calls onSaved with the updated listing.
  */
-export default function AddListingForm({ onCreated }) {
+export default function AddListingForm({ onCreated, initialListing = null, onSaved }) {
   const { session } = useAuth();
+  const isEditing = Boolean(initialListing);
   const [existingPost, setExistingPost] = useState("");
   const [prefillNotice, setPrefillNotice] = useState("");
-  const [formData, setFormData] = useState({
-    ...defaultFormState,
-    amenities: { ...defaultFormState.amenities },
-  });
-  const [locationState, setLocationState] = useState(defaultLocationState);
+  const [formData, setFormData] = useState(() =>
+    initialListing
+      ? listingToFormData(initialListing)
+      : {
+          ...defaultFormState,
+          amenities: { ...defaultFormState.amenities },
+        }
+  );
+  const [locationState, setLocationState] = useState(() =>
+    buildInitialLocationState(initialListing)
+  );
+  // Keep the saved location for the saved address instead of geocoding it again.
+  const initialAddress = locationState.status === "resolved" ? locationState.requestAddress : "";
+  const originalAvailableFrom = initialListing?.available_from?.slice(0, 10) || "";
   const [imageError, setImageError] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [isDraggingImages, setIsDraggingImages] = useState(false);
@@ -64,6 +77,10 @@ export default function AddListingForm({ onCreated }) {
     const trimmedAddress = formData.address.trim();
 
     if (!trimmedAddress || trimmedAddress.length < 8) {
+      return;
+    }
+
+    if (initialAddress && trimmedAddress === initialAddress) {
       return;
     }
 
@@ -91,7 +108,7 @@ export default function AddListingForm({ onCreated }) {
       controller.abort();
       window.clearTimeout(timeoutId);
     };
-  }, [formData.address]);
+  }, [formData.address, initialAddress]);
 
   const previewListing = useMemo(
     () =>
@@ -113,9 +130,10 @@ export default function AddListingForm({ onCreated }) {
       validateAvailabilityDates(
         formData.available_from,
         formData.available_to,
-        today
+        today,
+        originalAvailableFrom
       ),
-    [formData.available_from, formData.available_to, today]
+    [formData.available_from, formData.available_to, today, originalAvailableFrom]
   );
 
   const minimumAvailableToDate = formData.available_from
@@ -142,6 +160,8 @@ export default function AddListingForm({ onCreated }) {
 
       if (!trimmedAddress) {
         setLocationState(defaultLocationState);
+      } else if (initialAddress && trimmedAddress === initialAddress) {
+        setLocationState(buildInitialLocationState(initialListing));
       } else if (trimmedAddress.length < 8) {
         setLocationState({
           status: "typing",
@@ -269,7 +289,7 @@ export default function AddListingForm({ onCreated }) {
     }
 
     if (!session?.user?.id) {
-      setSubmitError("Sign in required to create a listing.");
+      setSubmitError(`Sign in required to ${isEditing ? "edit" : "create"} a listing.`);
       setIsSubmitting(false);
       return;
     }
@@ -322,6 +342,18 @@ export default function AddListingForm({ onCreated }) {
       longitude: resolvedLocation.longitude,
     };
 
+    if (isEditing) {
+      try {
+        const updated = await updateListing(initialListing.id, payload, { accessToken });
+        onSaved?.(normalizeListing(updated));
+      } catch (err) {
+        setSubmitError(err.message || "Could not save changes.");
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
     try {
       const created = await createListing(payload, {
         accessToken,
@@ -361,6 +393,7 @@ export default function AddListingForm({ onCreated }) {
   return (
     <div className="grid gap-8 2xl:grid-cols-[minmax(0,1.15fr)_minmax(420px,0.85fr)]">
       <form onSubmit={handleSubmit} className="space-y-8">
+        {!isEditing && (
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-sm font-medium text-red-600">Already wrote your sublet post?</p>
           <h2 className="mt-1 text-xl font-semibold text-slate-900">Start with your own post</h2>
@@ -387,6 +420,7 @@ export default function AddListingForm({ onCreated }) {
           </button>
           {prefillNotice && <p role="status" className="mt-3 text-sm text-slate-700">{prefillNotice}</p>}
         </section>
+        )}
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -578,7 +612,7 @@ export default function AddListingForm({ onCreated }) {
                   name="available_from"
                   value={formData.available_from}
                   onChange={handleChange}
-                  min={today}
+                  min={originalAvailableFrom && originalAvailableFrom < today ? originalAvailableFrom : today}
                   className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-lg text-slate-900 outline-none ring-red-200 focus:ring"
                 />
                 {dateErrors.available_from && (
@@ -739,7 +773,13 @@ export default function AddListingForm({ onCreated }) {
               disabled={isSubmitting || locationState.status === "loading"}
               className="mt-8 w-full rounded-lg bg-[#cc0033] py-3 font-medium text-white transition-colors hover:bg-[#a80029] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSubmitting ? "Saving listing..." : "Save listing"}
+              {isSubmitting
+                ? isEditing
+                  ? "Saving changes..."
+                  : "Saving listing..."
+                : isEditing
+                  ? "Save changes"
+                  : "Save listing"}
             </button>
           </aside>
         </div>
@@ -782,13 +822,14 @@ function getLocationMessageClass(status) {
   return "text-slate-500";
 }
 
-function validateAvailabilityDates(availableFrom, availableTo, today) {
+function validateAvailabilityDates(availableFrom, availableTo, today, originalAvailableFrom = "") {
   const errors = {
     available_from: "",
     available_to: "",
   };
 
-  if (availableFrom && availableFrom < today) {
+  // An existing listing can keep a start date that has already passed.
+  if (availableFrom && availableFrom < today && availableFrom !== originalAvailableFrom) {
     errors.available_from = "Available from cannot be earlier than today.";
   }
 
@@ -829,6 +870,26 @@ async function resolveAddressState(address, signal) {
     if (error.name === "AbortError") throw error;
     return buildLocationErrorState(address);
   }
+}
+
+function buildInitialLocationState(listing) {
+  const address = listing?.address?.trim() || "";
+  const campus = listing?.campus_location || listing?.campus || "";
+  if (!address || !campus) return defaultLocationState;
+
+  const distance = listing.distance ?? null;
+  return {
+    status: "resolved",
+    requestAddress: address,
+    campus,
+    distance,
+    latitude: listing.latitude ?? null,
+    longitude: listing.longitude ?? null,
+    message:
+      distance != null
+        ? `Closest campus: ${campus} (${distance} miles away)`
+        : `Closest campus: ${campus}`,
+  };
 }
 
 function buildLocationErrorState(address) {

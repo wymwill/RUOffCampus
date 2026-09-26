@@ -16,6 +16,7 @@ import {
 
 const router = Router()
 const VALID_CAMPUS_LOCATIONS = ['Busch', 'College Ave', 'Livingston', 'Cook/Douglass']
+const LISTING_STATUSES = ['active', 'paused', 'taken']
 
 // Fields a host may change on their own listing. Ownership and import
 // metadata (host_id, source, is_imported, ...) are never taken from the body.
@@ -39,6 +40,7 @@ const EDITABLE_LISTING_FIELDS = [
   'landlord_email',
   'latitude',
   'longitude',
+  'status',
 ]
 
 function pickEditableFields(body = {}) {
@@ -57,6 +59,9 @@ function validateListingUpdates(updates) {
   }
   if (updates.campus_location && !VALID_CAMPUS_LOCATIONS.includes(updates.campus_location)) {
     return `campus_location must be one of: ${VALID_CAMPUS_LOCATIONS.join(', ')}`
+  }
+  if ('status' in updates && !LISTING_STATUSES.includes(updates.status)) {
+    return `status must be one of: ${LISTING_STATUSES.join(', ')}`
   }
   return null
 }
@@ -100,9 +105,16 @@ function mapSupabaseListingRow(data) {
     sourceName: data.is_imported ? data.source_name || '' : 'Supabase',
     sourceUrl: data.source_url || '',
     isImported: Boolean(data.is_imported),
+    status: data.status || 'active',
     created_at: data.created_at,
     host_id: data.host_id,
   }
+}
+
+// Paused and taken listings stay visible to their host but leave search.
+// Rows from before the status column existed count as active.
+function isActiveListing(listing) {
+  return (listing.status || 'active') === 'active'
 }
 
 function filterListings(listings, query) {
@@ -113,6 +125,8 @@ function filterListings(listings, query) {
   const campus = query.campus?.toLowerCase()
 
   return listings.filter((listing) => {
+    if (!isActiveListing(listing)) return false
+
     const listingPrice = Number(listing.price ?? 0)
     const listingBeds = Number(listing.beds ?? 0)
     const listingCampus = String(listing.campus || listing.campus_location || '').toLowerCase()
@@ -317,6 +331,32 @@ router.get('/', async (req, res) => {
       return res.status(400).json({ error: error.message })
     }
 
+    res.json(data.filter(isActiveListing).map(mapSupabaseListingRow))
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+// GET /mine - every listing the caller hosts, including paused and taken ones.
+router.get('/mine', requireSupabaseUser, async (req, res) => {
+  try {
+    if (!isSupabaseConfigured) {
+      const hostId = req.query.host_id
+      if (!hostId) {
+        return res.status(400).json({ error: 'host_id is required in local mode.' })
+      }
+      return res.json(
+        listLocalListings().filter((listing) => String(listing.host_id) === String(hostId))
+      )
+    }
+
+    const { data, error } = await getAuthenticatedSupabase(req)
+      .from('listings')
+      .select('*')
+      .eq('host_id', req.user.id)
+      .order('created_at', { ascending: false })
+
+    if (error) return res.status(400).json({ error: error.message })
     res.json(data.map(mapSupabaseListingRow))
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' })
@@ -580,6 +620,15 @@ router.delete('/:id', requireSupabaseUser, async (req, res) => {
     res.status(500).json({ error: 'Internal server error' })
   }
 })
+
+function getAuthenticatedSupabase(req) {
+  const accessToken =
+    req.headers.authorization?.startsWith('Bearer ')
+      ? req.headers.authorization.slice(7)
+      : null
+
+  return createSupabaseClientWithToken(accessToken)
+}
 
 function toNullableNumber(value) {
   if (value == null || value === '') return null
