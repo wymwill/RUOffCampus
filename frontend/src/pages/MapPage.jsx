@@ -20,6 +20,9 @@ import busData from "../data/busRoutes.json";
 const DEFAULT_CENTER = [40.5007, -74.4474];
 const DEFAULT_ZOOM = 14;
 
+// New Jersey's bounding box. The map can't be panned or zoomed out past it.
+const NEW_JERSEY_BOUNDS = L.latLngBounds([38.92, -75.57], [41.36, -73.88]);
+
 const routesServingStop = new Map();
 for (const route of busData.routes) {
   for (const stopId of busData.routeStops[route.id] ?? []) {
@@ -69,6 +72,22 @@ function FitToListings({ positions }) {
       map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
     }
   }, [map, positions]);
+  return null;
+}
+
+// Zooming out stops once the whole state is in view. Recomputed on resize.
+function LockToNewJersey() {
+  const map = useMap();
+  useEffect(() => {
+    const updateMinZoom = () => {
+      map.setMinZoom(map.getBoundsZoom(NEW_JERSEY_BOUNDS));
+    };
+    updateMinZoom();
+    map.on("resize", updateMinZoom);
+    return () => {
+      map.off("resize", updateMinZoom);
+    };
+  }, [map]);
   return null;
 }
 
@@ -206,12 +225,15 @@ function MapPage() {
         center={DEFAULT_CENTER}
         zoom={DEFAULT_ZOOM}
         scrollWheelZoom
+        maxBounds={NEW_JERSEY_BOUNDS}
+        maxBoundsViscosity={1}
         className="h-full w-full"
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.esri.com/">Esri</a>'
           url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"
         />
+        <LockToNewJersey />
         <FitToListings positions={positions} />
 
         {showBusRoutes && (
