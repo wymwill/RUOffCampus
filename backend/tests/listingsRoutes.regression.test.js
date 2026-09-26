@@ -82,8 +82,26 @@ test('import-status responds in local mode', async () => {
   assert.equal(res.body.mode, 'local-sqlite')
 })
 
-// Known bug on main, unrelated to this PR: in local SQLite mode,
-// PUT /listings/:id returns 500 ("Unknown named parameter 'source'") because
-// updateListingStatement doesn't accept every field normalizeLocalRecord
-// returns. Left as a todo so it's visible without blocking the suite.
-test.todo('PUT /listings/:id updates a local listing (pre-existing bug on main)')
+async function createLocal(body = {}) {
+  const res = await request(app.base, 'POST', '/listings', {
+    body: { title: 'Owner test sublet', price_monthly: 800, host_id: 'owner-host', ...body },
+  })
+  assert.equal(res.status, 201, JSON.stringify(res.body))
+  return res.body
+}
+
+test('PUT /listings/:id updates a local listing', async () => {
+  const listing = await createLocal()
+  try {
+    const res = await request(app.base, 'PUT', `/listings/${encodeURIComponent(listing.id)}`, {
+      body: { host_id: 'owner-host', title: 'Renamed sublet', price_monthly: 850 },
+    })
+    assert.equal(res.status, 200, JSON.stringify(res.body))
+    assert.equal(res.body.title, 'Renamed sublet')
+    assert.equal(res.body.price, 850)
+  } finally {
+    await request(app.base, 'DELETE', `/listings/${encodeURIComponent(listing.id)}`, {
+      body: { host_id: 'owner-host' },
+    })
+  }
+})

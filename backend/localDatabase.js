@@ -239,7 +239,10 @@ export function updateLocalListing(id, updates) {
     }
   )
 
-  updateListingStatement.run(record)
+  // The UPDATE statement rejects unknown named parameters, so drop the
+  // columns it never changes.
+  const { source, source_listing_id, host_id, is_imported, created_at, ...updatable } = record
+  updateListingStatement.run(updatable)
   return getLocalListingById(record.id)
 }
 
