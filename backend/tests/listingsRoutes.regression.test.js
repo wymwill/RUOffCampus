@@ -105,3 +105,73 @@ test('PUT /listings/:id updates a local listing', async () => {
     })
   }
 })
+
+test('local PUT and DELETE reject callers who do not own the listing', async () => {
+  const listing = await createLocal()
+  const path = `/listings/${encodeURIComponent(listing.id)}`
+  try {
+    const noHost = await request(app.base, 'PUT', path, { body: { title: 'Hijacked' } })
+    assert.equal(noHost.status, 403)
+
+    const otherHost = await request(app.base, 'PUT', path, {
+      body: { host_id: 'someone-else', title: 'Hijacked' },
+    })
+    assert.equal(otherHost.status, 403)
+
+    const otherDelete = await request(app.base, 'DELETE', path, { body: { host_id: 'someone-else' } })
+    assert.equal(otherDelete.status, 403)
+
+    const still = await request(app.base, 'GET', path)
+    assert.equal(still.body.title, 'Owner test sublet')
+  } finally {
+    const deleted = await request(app.base, 'DELETE', path, { body: { host_id: 'owner-host' } })
+    assert.equal(deleted.status, 204)
+  }
+})
+
+test('PUT ignores ownership and import fields in the body', async () => {
+  const listing = await createLocal()
+  const path = `/listings/${encodeURIComponent(listing.id)}`
+  try {
+    const res = await request(app.base, 'PUT', path, {
+      body: {
+        host_id: 'owner-host',
+        title: 'Still mine',
+        is_imported: true,
+        source: 'rutgers_off_campus',
+        source_name: 'Rutgers Off-Campus Marketplace',
+        source_url: 'https://offcampushousing.rutgers.edu/fake',
+        created_at: '2000-01-01T00:00:00Z',
+      },
+    })
+    assert.equal(res.status, 200, JSON.stringify(res.body))
+    assert.equal(res.body.title, 'Still mine')
+    assert.equal(res.body.isImported, false)
+    assert.equal(res.body.source, 'user')
+    assert.notEqual(res.body.sourceName, 'Rutgers Off-Campus Marketplace')
+    assert.equal(res.body.sourceUrl, '')
+    assert.equal(res.body.host_id, 'owner-host')
+    assert.notEqual(res.body.created_at, '2000-01-01T00:00:00Z')
+  } finally {
+    await request(app.base, 'DELETE', path, { body: { host_id: 'owner-host' } })
+  }
+})
+
+test('PUT validates edited fields', async () => {
+  const listing = await createLocal()
+  const path = `/listings/${encodeURIComponent(listing.id)}`
+  try {
+    const nothing = await request(app.base, 'PUT', path, { body: { host_id: 'owner-host', source: 'x' } })
+    assert.equal(nothing.status, 400)
+
+    const badPrice = await request(app.base, 'PUT', path, { body: { host_id: 'owner-host', price_monthly: 0 } })
+    assert.equal(badPrice.status, 400)
+
+    const badCampus = await request(app.base, 'PUT', path, {
+      body: { host_id: 'owner-host', campus_location: 'Newark' },
+    })
+    assert.equal(badCampus.status, 400)
+  } finally {
+    await request(app.base, 'DELETE', path, { body: { host_id: 'owner-host' } })
+  }
+})
