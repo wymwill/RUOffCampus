@@ -40,7 +40,7 @@ function ListingCard({ listing, isFavorited, onToggleFavorite }) {
             className="h-56 w-full object-cover"
           />
 
-          <div className="absolute bottom-4 left-4 rounded-full bg-red-600 px-4 py-2 text-lg font-semibold text-white shadow">
+          <div className="absolute left-4 top-4 rounded-full bg-red-600 px-4 py-2 text-lg font-semibold text-white shadow">
             {formatListingPrice(normalizedListing)}
           </div>
 

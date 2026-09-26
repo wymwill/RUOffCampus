@@ -36,6 +36,8 @@ function mapSupabaseListingRow(data) {
     available_to: data.available_to || '',
     landlordNum: data.landlord_phone || '',
     landlordEmail: data.landlord_email || '',
+    latitude: toNullableNumber(data.latitude),
+    longitude: toNullableNumber(data.longitude),
     image: data.image_url || '',
     image_url: data.image_url || '',
     images: Array.isArray(data.images) ? data.images : [data.image_url].filter(Boolean),

@@ -9,6 +9,7 @@ import AddListingPage from "./pages/AddListingPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import InboxPage from "./pages/InboxPage";
+import MapPage from "./pages/MapPage";
 import ConversationPage from "./pages/ConversationPage";
 
 const router = createBrowserRouter([
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <ListingPage />,
+      },
+      {
+        path: "map",
+        element: <MapPage />,
       },
       {
         path: "favorites",
