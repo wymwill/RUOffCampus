@@ -283,7 +283,7 @@ async function getConversationDetails(supabaseClient, conversationId, currentUse
   return conversations[0] ?? null
 }
 
-async function listConversations(supabaseClient, currentUserId, onlyConversationIds = null) {
+export async function listConversations(supabaseClient, currentUserId, onlyConversationIds = null) {
   const participantConversationIds = onlyConversationIds
     ? onlyConversationIds
     : await getCurrentUserConversationIds(supabaseClient, currentUserId)
@@ -314,44 +314,51 @@ async function listConversations(supabaseClient, currentUserId, onlyConversation
   if (!conversations?.length) return []
 
   const conversationIds = conversations.map((conversation) => conversation.id)
-  const [{ data: participants, error: participantsError }, { data: messages, error: messagesError }] =
-    await Promise.all([
-      supabaseClient
-        .from('conversation_participants')
-        .select(`
-          conversation_id,
-          profile_id,
-          joined_at,
-          last_read_at,
-          profiles (
-            id,
-            email,
-            name,
-            full_name,
-            avatar_url
-          )
-        `)
-        .in('conversation_id', conversationIds),
-      supabaseClient
-        .from('messages')
-        .select('id, conversation_id, sender_id, body, created_at')
-        .in('conversation_id', conversationIds)
-        .order('created_at', { ascending: false })
-        .limit(500),
-    ])
+  const { data: participants, error: participantsError } = await supabaseClient
+    .from('conversation_participants')
+    .select(`
+      conversation_id,
+      profile_id,
+      joined_at,
+      last_read_at,
+      profiles (
+        id,
+        email,
+        name,
+        full_name,
+        avatar_url
+      )
+    `)
+    .in('conversation_id', conversationIds)
 
   if (participantsError) throw participantsError
-  if (messagesError) throw messagesError
 
   const participantsByConversation = groupBy(participants ?? [], 'conversation_id')
-  const messagesByConversation = groupBy(messages ?? [], 'conversation_id')
+
+  // Count per conversation so busy threads can't push others past a shared row limit.
+  const summaries = await Promise.all(
+    conversationIds.map((conversationId) => {
+      const currentParticipant = (participantsByConversation.get(conversationId) ?? []).find(
+        (participant) => String(participant.profile_id) === String(currentUserId)
+      )
+      return getMessageSummary(
+        supabaseClient,
+        conversationId,
+        currentUserId,
+        currentParticipant?.last_read_at ?? null
+      )
+    })
+  )
+  const summaryByConversation = new Map(
+    conversationIds.map((conversationId, index) => [conversationId, summaries[index]])
+  )
 
   return conversations
     .map((conversation) =>
       mapConversation({
         conversation,
         participants: participantsByConversation.get(conversation.id) ?? [],
-        messages: messagesByConversation.get(conversation.id) ?? [],
+        summary: summaryByConversation.get(conversation.id),
         currentUserId,
       })
     )
@@ -360,6 +367,30 @@ async function listConversations(supabaseClient, currentUserId, onlyConversation
       const bTime = new Date(b.last_message?.created_at ?? b.created_at).getTime()
       return bTime - aTime
     })
+}
+
+async function getMessageSummary(supabaseClient, conversationId, currentUserId, lastReadAt) {
+  let unreadQuery = supabaseClient
+    .from('messages')
+    .select('id', { count: 'exact', head: true })
+    .eq('conversation_id', conversationId)
+    .neq('sender_id', currentUserId)
+  if (lastReadAt) unreadQuery = unreadQuery.gt('created_at', lastReadAt)
+
+  const [{ data: latest, error: latestError }, { count, error: unreadError }] = await Promise.all([
+    supabaseClient
+      .from('messages')
+      .select('id, conversation_id, sender_id, body, created_at')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: false })
+      .limit(1),
+    unreadQuery,
+  ])
+
+  if (latestError) throw latestError
+  if (unreadError) throw unreadError
+
+  return { lastMessage: latest?.[0] ?? null, unreadCount: count ?? 0 }
 }
 
 async function getCurrentUserConversationIds(supabaseClient, currentUserId) {
@@ -395,18 +426,12 @@ async function markConversationRead(supabaseClient, conversationId, currentUserI
   return data
 }
 
-function mapConversation({ conversation, participants, messages, currentUserId }) {
+function mapConversation({ conversation, participants, summary, currentUserId }) {
   const currentParticipant =
     participants.find((participant) => String(participant.profile_id) === String(currentUserId)) ??
     null
   const otherParticipants = participants.filter(
     (participant) => String(participant.profile_id) !== String(currentUserId)
-  )
-  const lastReadAt = currentParticipant?.last_read_at
-    ? new Date(currentParticipant.last_read_at).getTime()
-    : 0
-  const sortedMessages = [...messages].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   )
 
   return {
@@ -427,11 +452,8 @@ function mapConversation({ conversation, participants, messages, currentUserId }
       : null,
     participants: participants.map(mapParticipant),
     other_participants: otherParticipants.map(mapParticipant),
-    last_message: sortedMessages[0] ?? null,
-    unread_count: sortedMessages.filter((message) => {
-      if (String(message.sender_id) === String(currentUserId)) return false
-      return new Date(message.created_at).getTime() > lastReadAt
-    }).length,
+    last_message: summary?.lastMessage ?? null,
+    unread_count: summary?.unreadCount ?? 0,
     last_read_at: currentParticipant?.last_read_at ?? null,
   }
 }

@@ -51,7 +51,7 @@ test('create + read back a listing with coordinates', async () => {
     assert.equal(detail.body.latitude, 40.500874)
     assert.equal(detail.body.longitude, -74.452454)
   } finally {
-    await request(app.base, 'DELETE', `/listings/${encodeURIComponent(id)}`)
+    await request(app.base, 'DELETE', `/listings/${encodeURIComponent(id)}?host_id=map-regression-host`)
   }
 })
 
@@ -74,6 +74,6 @@ test('listings without coordinates expose null lat/lng instead of dropping the f
     assert.equal(detail.body.latitude, null)
     assert.equal(detail.body.longitude, null)
   } finally {
-    await request(app.base, 'DELETE', `/listings/${encodeURIComponent(id)}`)
+    await request(app.base, 'DELETE', `/listings/${encodeURIComponent(id)}?host_id=map-regression-host`)
   }
 })
