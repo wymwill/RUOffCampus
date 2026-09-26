@@ -8,7 +8,7 @@
     "start": "node server.js",
     "dev": "node server.js",
     "import:rutgers": "node scripts/importRutgersListings.js",
-    "test": "node --test \"tests/*.test.js\""
+    "test": "LOCAL_DB_PATH=:memory: node --test \"tests/*.test.js\""
   },
   "keywords": [],
   "author": "",

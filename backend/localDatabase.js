@@ -8,7 +8,8 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const DATA_DIR = path.join(__dirname, 'data')
-export const LOCAL_DB_PATH = path.join(DATA_DIR, 'listings.sqlite')
+// Tests set LOCAL_DB_PATH=:memory: so parallel test files don't share one file.
+export const LOCAL_DB_PATH = process.env.LOCAL_DB_PATH || path.join(DATA_DIR, 'listings.sqlite')
 
 fs.mkdirSync(DATA_DIR, { recursive: true })
 
