@@ -17,6 +17,61 @@ import {
 const router = Router()
 const VALID_CAMPUS_LOCATIONS = ['Busch', 'College Ave', 'Livingston', 'Cook/Douglass']
 
+// Fields a host may change on their own listing. Ownership and import
+// metadata (host_id, source, is_imported, ...) are never taken from the body.
+const EDITABLE_LISTING_FIELDS = [
+  'title',
+  'description',
+  'address',
+  'price_monthly',
+  'price_label',
+  'campus_location',
+  'beds',
+  'baths',
+  'property_type',
+  'distance',
+  'image_url',
+  'images',
+  'amenities',
+  'available_from',
+  'available_to',
+  'landlord_phone',
+  'landlord_email',
+  'latitude',
+  'longitude',
+]
+
+function pickEditableFields(body = {}) {
+  const updates = {}
+  for (const field of EDITABLE_LISTING_FIELDS) {
+    if (body[field] !== undefined) updates[field] = body[field]
+  }
+  return updates
+}
+
+function validateListingUpdates(updates) {
+  if (Object.keys(updates).length === 0) return 'No updatable fields provided'
+  if ('title' in updates && !String(updates.title ?? '').trim()) return 'Title cannot be empty'
+  if ('price_monthly' in updates && !(Number(updates.price_monthly) > 0)) {
+    return 'price_monthly must be a positive number'
+  }
+  if (updates.campus_location && !VALID_CAMPUS_LOCATIONS.includes(updates.campus_location)) {
+    return `campus_location must be one of: ${VALID_CAMPUS_LOCATIONS.join(', ')}`
+  }
+  return null
+}
+
+// Local mode has no auth, so the caller names itself with host_id (the same
+// field used on create). Imported listings have no host and stay read only.
+function localOwnershipError(existing, req) {
+  if (existing.isImported) return 'Imported listings cannot be changed.'
+  const requesterId = req.body?.host_id ?? req.query.host_id
+  if (!requesterId || String(existing.host_id) !== String(requesterId)) {
+    return 'You can only change your own listings.'
+  }
+  return null
+}
+
 function mapSupabaseListingRow(data) {
   return {
     id: data.id,
@@ -420,13 +475,15 @@ router.put('/:id', requireSupabaseUser, async (req, res) => {
         return res.status(404).json({ error: 'Listing not found' })
       }
 
-      const updates = { ...req.body }
-      delete updates.id
-      delete updates.host_id
-      delete updates.created_at
+      const ownershipError = localOwnershipError(existing, req)
+      if (ownershipError) {
+        return res.status(403).json({ error: ownershipError })
+      }
 
-      if (Object.keys(updates).length === 0) {
-        return res.status(400).json({ error: 'No updatable fields provided' })
+      const updates = pickEditableFields(req.body)
+      const validationError = validateListingUpdates(updates)
+      if (validationError) {
+        return res.status(400).json({ error: validationError })
       }
 
       const updated = updateLocalListing(id, updates)
@@ -447,13 +504,10 @@ router.put('/:id', requireSupabaseUser, async (req, res) => {
       return res.status(403).json({ error: 'You can only edit your own listings.' })
     }
 
-    const updates = { ...req.body }
-    delete updates.id
-    delete updates.host_id
-    delete updates.created_at
-
-    if (Object.keys(updates).length === 0) {
-      return res.status(400).json({ error: 'No updatable fields provided' })
+    const updates = pickEditableFields(req.body)
+    const validationError = validateListingUpdates(updates)
+    if (validationError) {
+      return res.status(400).json({ error: validationError })
     }
 
     const accessToken =
@@ -486,6 +540,11 @@ router.delete('/:id', requireSupabaseUser, async (req, res) => {
       const existing = getLocalListingById(id)
       if (!existing) {
         return res.status(404).json({ error: 'Listing not found' })
+      }
+
+      const ownershipError = localOwnershipError(existing, req)
+      if (ownershipError) {
+        return res.status(403).json({ error: ownershipError })
       }
 
       deleteLocalListing(id)
