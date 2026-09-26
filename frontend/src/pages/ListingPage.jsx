@@ -3,24 +3,14 @@ import { useMemo, useState } from "react";
 import FilterSidebar from "../components/FilterSidebar";
 import ListingGrid from "../components/ListingGrid";
 import applyFilters from "../utils/applyFilters";
+import { createDefaultFilters } from "../utils/defaultFilters";
 import { useFavorites } from "../context/FavoritesContext";
 import { useListings } from "../context/ListingsContext";
 
 function ListingPage() {
   const { listings, isLoading, error, refreshListings } = useListings();
   const { favorites, toggleFavorite } = useFavorites();
-  const [filters, setFilters] = useState({
-    price: [0, 5000],
-    beds: "any",
-    propertyType: "all",
-    campus: "all",
-    amenities: {
-      Parking: false,
-      Laundry: false,
-      Pet_Friendly: false,
-      Furnished: false,
-    },
-  });
+  const [filters, setFilters] = useState(createDefaultFilters);
 
   const filteredListings = useMemo(() => {
     return applyFilters(listings, filters);

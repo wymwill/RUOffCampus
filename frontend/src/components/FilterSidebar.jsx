@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createDefaultFilters } from "../utils/defaultFilters";
 
 function FilterSidebar({ filters, setFilters }) {
   // Filters start collapsed on phone-sized viewports so listings show first;
@@ -58,20 +59,22 @@ function FilterSidebar({ filters, setFilters }) {
     }));
   };
 
-  const resetFilters = () => {
-    setFilters({
-      price: [0, 5000],
-      beds: "any",
-      propertyType: "all",
-      campus: "all",
-      amenities: {
-        Parking: false,
-        Laundry: false,
-        Pet_Friendly: false,
-        Furnished: false,
+  const handleDateChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFilters((prev) => ({
+      ...prev,
+      dates: {
+        ...prev.dates,
+        [name]: type === "checkbox" ? checked : value,
       },
-    });
+    }));
   };
+
+  const resetFilters = () => {
+    setFilters(createDefaultFilters());
+  };
+
+  const hasDates = Boolean(filters.dates.moveIn || filters.dates.moveOut);
 
   return (
     <aside className="h-fit w-full max-w-none rounded-3xl border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-6 lg:max-w-xs">
@@ -96,6 +99,51 @@ function FilterSidebar({ filters, setFilters }) {
       </div>
 
       <div className={`space-y-6 ${open ? "" : "hidden"} lg:block`}>
+        <fieldset>
+          <legend className="mb-2 block text-sm font-medium text-slate-700">
+            Your dates
+          </legend>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="text-xs text-slate-500">
+              Move in
+              <input
+                type="date"
+                name="moveIn"
+                value={filters.dates.moveIn}
+                max={filters.dates.moveOut || undefined}
+                onChange={handleDateChange}
+                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-red-500"
+              />
+            </label>
+            <label className="text-xs text-slate-500">
+              Move out
+              <input
+                type="date"
+                name="moveOut"
+                value={filters.dates.moveOut}
+                min={filters.dates.moveIn || undefined}
+                onChange={handleDateChange}
+                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-red-500"
+              />
+            </label>
+          </div>
+          <label
+            className={`mt-3 inline-flex items-center gap-2 text-sm ${
+              hasDates ? "text-slate-700" : "text-slate-400"
+            }`}
+          >
+            <input
+              type="checkbox"
+              name="includeUndated"
+              checked={filters.dates.includeUndated}
+              disabled={!hasDates}
+              onChange={handleDateChange}
+              className="h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500"
+            />
+            Include listings without dates
+          </label>
+        </fieldset>
+
         <div>
           <label className="mb-2 block text-sm font-medium text-slate-700">
             Bedrooms

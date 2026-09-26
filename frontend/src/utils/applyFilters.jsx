@@ -1,3 +1,5 @@
+import { listingMatchesDates } from "./dateRange";
+
 export default function applyFilters(listings, filters) {
   return listings.filter((listing) => {
     const [minPrice, maxPrice] = filters.price;
@@ -25,6 +27,8 @@ export default function applyFilters(listings, filters) {
       const listingCampus = (listing.campus || "").trim();
       if (listingCampus !== filters.campus) return false;
     }
+
+    if (!listingMatchesDates(listing, filters.dates)) return false;
 
     const selectedAmenities = Object.entries(filters.amenities || {})
       .filter(([, selected]) => selected)
