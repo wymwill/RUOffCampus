@@ -11,6 +11,8 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import InboxPage from "./pages/InboxPage";
 import MapPage from "./pages/MapPage";
 import ConversationPage from "./pages/ConversationPage";
+import MyListingsPage from "./pages/MyListingsPage";
+import EditListingPage from "./pages/EditListingPage";
 
 const router = createBrowserRouter([
   {
@@ -57,6 +59,14 @@ const router = createBrowserRouter([
       {
         path: "listings/:listingId",
         element: <CardInfo />,
+      },
+      {
+        path: "listings/:listingId/edit",
+        element: <EditListingPage />,
+      },
+      {
+        path: "my-listings",
+        element: <MyListingsPage />,
       },
     ],
   },

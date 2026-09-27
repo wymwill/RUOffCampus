@@ -175,3 +175,39 @@ test('PUT validates edited fields', async () => {
     await request(app.base, 'DELETE', path, { body: { host_id: 'owner-host' } })
   }
 })
+
+test('paused and taken listings leave search but stay in the host list', async () => {
+  const listing = await createLocal({ host_id: 'status-host', title: 'Status test sublet' })
+  const path = `/listings/${encodeURIComponent(listing.id)}`
+  const inSearch = async () =>
+    (await request(app.base, 'GET', '/listings')).body.some((item) => item.id === listing.id)
+  try {
+    assert.equal(listing.status, 'active')
+    assert.equal(await inSearch(), true)
+
+    for (const status of ['paused', 'taken']) {
+      const updated = await request(app.base, 'PUT', path, { body: { host_id: 'status-host', status } })
+      assert.equal(updated.status, 200, JSON.stringify(updated.body))
+      assert.equal(updated.body.status, status)
+      assert.equal(await inSearch(), false)
+
+      const mine = await request(app.base, 'GET', '/listings/mine?host_id=status-host')
+      assert.equal(mine.status, 200)
+      assert.deepEqual(mine.body.map((item) => [item.id, item.status]), [[listing.id, status]])
+    }
+
+    const relisted = await request(app.base, 'PUT', path, { body: { host_id: 'status-host', status: 'active' } })
+    assert.equal(relisted.body.status, 'active')
+    assert.equal(await inSearch(), true)
+
+    const bad = await request(app.base, 'PUT', path, { body: { host_id: 'status-host', status: 'deleted' } })
+    assert.equal(bad.status, 400)
+  } finally {
+    await request(app.base, 'DELETE', path, { body: { host_id: 'status-host' } })
+  }
+})
+
+test('GET /listings/mine requires host_id in local mode', async () => {
+  const res = await request(app.base, 'GET', '/listings/mine')
+  assert.equal(res.status, 400)
+})

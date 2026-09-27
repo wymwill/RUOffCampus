@@ -42,6 +42,11 @@ function Navbar() {
           <NavLink to="/inbox" className={linkClass}>
             Inbox
           </NavLink>
+          {user && (
+            <NavLink to="/my-listings" className={linkClass}>
+              My listings
+            </NavLink>
+          )}
         </div>
 
         <Link

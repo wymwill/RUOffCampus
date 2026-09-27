@@ -45,6 +45,7 @@ db.exec(`
     longitude REAL,
     host_id TEXT,
     is_imported INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'active',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
@@ -61,6 +62,12 @@ db.exec(`
     value TEXT NOT NULL
   );
 `)
+
+// Databases created before listing status existed need the column added.
+const localListingColumns = db.prepare('PRAGMA table_info(local_listings)').all()
+if (!localListingColumns.some((column) => column.name === 'status')) {
+  db.exec("ALTER TABLE local_listings ADD COLUMN status TEXT NOT NULL DEFAULT 'active'")
+}
 
 const selectAllListingsStatement = db.prepare(`
   SELECT * FROM local_listings
@@ -103,6 +110,7 @@ const insertListingStatement = db.prepare(`
     longitude,
     host_id,
     is_imported,
+    status,
     created_at,
     updated_at
   ) VALUES (
@@ -132,6 +140,7 @@ const insertListingStatement = db.prepare(`
     @longitude,
     @host_id,
     @is_imported,
+    @status,
     @created_at,
     @updated_at
   )
@@ -161,6 +170,7 @@ const updateListingStatement = db.prepare(`
     longitude = @longitude,
     source_name = @source_name,
     source_url = @source_url,
+    status = @status,
     updated_at = @updated_at
   WHERE id = @id
 `)
@@ -340,6 +350,7 @@ function normalizeLocalRecord(input, defaults) {
     longitude: toNullableNumber(input.longitude),
     host_id: input.host_id || input.hostId || null,
     is_imported: defaults.isImported ? 1 : 0,
+    status: input.status || 'active',
     created_at: createdAt,
     updated_at: updatedAt,
   }
@@ -374,6 +385,7 @@ function mapLocalRowToListing(row) {
     sourceName: row.source_name || '',
     sourceUrl: row.source_url || '',
     isImported: Boolean(row.is_imported),
+    status: row.status || 'active',
     created_at: row.created_at,
     updated_at: row.updated_at,
   }

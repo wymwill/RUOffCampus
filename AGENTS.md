@@ -12,7 +12,7 @@ Rutgers-only sublet marketplace. Students with a verified rutgers.edu email brow
 ## Checks
 
 - Backend tests run with `cd backend && npm test`
-- Frontend checks run with `cd frontend && npm run lint && npm run build`
+- Frontend checks run with `cd frontend && npm test && npm run lint && npm run build`
 
 ## Commits
 

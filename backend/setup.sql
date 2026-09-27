@@ -74,6 +74,7 @@ create table if not exists public.listings (
   latitude numeric,
   longitude numeric,
   host_id uuid not null references public.profiles(id) on delete cascade,
+  status text not null default 'active' check (status in ('active', 'paused', 'taken')),
   created_at timestamptz not null default now()
 );
 
