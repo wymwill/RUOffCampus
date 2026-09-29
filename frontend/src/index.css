@@ -30,6 +30,12 @@ body {
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.18);
 }
 
+.listing-price-pin-selected {
+  border-color: #dc2626;
+  background: #dc2626;
+  color: #ffffff;
+}
+
 .listing-price-pin-bubble:hover {
   border-color: #dc2626;
   color: #dc2626;

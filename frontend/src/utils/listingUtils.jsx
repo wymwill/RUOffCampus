@@ -122,3 +122,9 @@ function normalizeImageEntry(image, index) {
 
   return null;
 }
+
+/** Map page link that zooms to one listing, or null when it has no coordinates. */
+export function getListingMapPath(listing) {
+  if (!Number.isFinite(listing?.latitude) || !Number.isFinite(listing?.longitude)) return null;
+  return `/map?listing=${encodeURIComponent(listing.id)}`;
+}

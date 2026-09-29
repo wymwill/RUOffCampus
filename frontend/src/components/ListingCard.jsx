@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   formatAmenityLabel,
   formatListingPrice,
+  getListingMapPath,
   normalizeListing,
 } from "../utils/listingUtils";
 import MessageHostButton from "./MessageHostButton";
@@ -23,6 +24,16 @@ function ListingCard({ listing, isFavorited, onToggleFavorite }) {
       ? `${normalizedListing.distance} miles from ${normalizedListing.campus}`
       : `${normalizedListing.distance} miles from Rutgers`
     : null;
+
+  const navigate = useNavigate();
+  const mapPath = getListingMapPath(normalizedListing);
+
+  // The whole card is a link, so stop the click reaching it.
+  const handleMapClick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    navigate(mapPath);
+  };
 
   const handleFavoriteClick = (event) => {
     event.preventDefault();
@@ -52,6 +63,16 @@ function ListingCard({ listing, isFavorited, onToggleFavorite }) {
           >
             {isFavorited ? "♥" : "♡"}
           </button>
+
+          {mapPath && (
+            <button
+              type="button"
+              onClick={handleMapClick}
+              className="absolute bottom-4 right-4 rounded-full bg-white/95 px-4 py-2 text-sm font-semibold text-slate-800 shadow transition hover:text-red-600"
+            >
+              View on map
+            </button>
+          )}
         </div>
 
         <div className="p-5">
