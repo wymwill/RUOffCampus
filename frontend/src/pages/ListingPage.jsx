@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
-import FilterSidebar from "../components/FilterSidebar";
+import FilterBar from "../components/FilterBar";
 import ListingGrid from "../components/ListingGrid";
 import applyFilters from "../utils/applyFilters";
 import { createDefaultFilters } from "../utils/defaultFilters";
@@ -18,10 +18,10 @@ function ListingPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto flex max-w-[1600px] flex-col gap-6 px-4 py-6 sm:px-6 lg:flex-row">
-        <FilterSidebar filters={filters} setFilters={setFilters} />
+      <FilterBar filters={filters} setFilters={setFilters} />
 
-        <main className="flex-1">
+      <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6">
+        <main>
           <div className="mb-6 flex items-end justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-red-600">Available Housing</p>
