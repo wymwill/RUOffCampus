@@ -1,10 +1,12 @@
-import { formatListingPrice } from "../utils/listingUtils";
+import { Link } from "react-router-dom";
+import { formatListingPrice, getListingMapPath } from "../utils/listingUtils";
 import MessageHostButton from "./MessageHostButton";
 
 const Sidebar = ({ foundListing }) => {
   const hasPhone = Boolean(foundListing.landlordNum);
   const hasEmail = Boolean(foundListing.landlordEmail);
   const hasSourceUrl = Boolean(foundListing.sourceUrl);
+  const mapPath = getListingMapPath(foundListing);
 
   return (
     <div className="sticky top-24 h-fit rounded-2xl bg-gray-100 p-6">
@@ -67,6 +69,14 @@ const Sidebar = ({ foundListing }) => {
                 listing={foundListing}
                 className="w-full rounded-lg border border-[#cc0033] py-3 font-medium text-[#cc0033] transition-colors hover:bg-[#cc0033] hover:text-white disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400 disabled:hover:bg-transparent"
               />
+            )}
+            {mapPath && (
+              <Link
+                to={mapPath}
+                className="block w-full rounded-lg border border-slate-300 bg-white py-3 text-center font-medium text-slate-700 transition-colors hover:border-slate-400 hover:text-slate-900"
+              >
+                View on map
+              </Link>
             )}
         </div>
     </div>

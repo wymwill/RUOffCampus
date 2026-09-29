@@ -133,3 +133,9 @@ export function formatDistanceLabel(listing) {
     ? `${listing.distance} miles from ${listing.campus}`
     : `${listing.distance} miles from Rutgers`;
 }
+
+/** Map page link that zooms to one listing, or null when it has no coordinates. */
+export function getListingMapPath(listing) {
+  if (!Number.isFinite(listing?.latitude) || !Number.isFinite(listing?.longitude)) return null;
+  return `/map?listing=${encodeURIComponent(listing.id)}`;
+}

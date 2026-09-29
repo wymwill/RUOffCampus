@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   MapContainer,
   TileLayer,
@@ -41,6 +41,14 @@ function createPriceIcon(listing) {
   return L.divIcon({
     className: "listing-price-pin",
     html: `<div class="listing-price-pin-bubble">${formatPrice(listing)}</div>`,
+    iconSize: [0, 0],
+  });
+}
+
+function createSelectedPriceIcon(listing) {
+  return L.divIcon({
+    className: "listing-price-pin",
+    html: `<div class="listing-price-pin-bubble listing-price-pin-selected">${formatPrice(listing)}</div>`,
     iconSize: [0, 0],
   });
 }
@@ -88,6 +96,19 @@ function LockToNewJersey() {
       map.off("resize", updateMinZoom);
     };
   }, [map]);
+  return null;
+}
+
+// Zoom straight to one listing when the map is opened from a listing's
+// "View on map" button.
+const FOCUS_ZOOM = 16;
+
+function FocusListing({ listing }) {
+  const map = useMap();
+  const { latitude, longitude } = listing;
+  useEffect(() => {
+    map.setView([latitude, longitude], FOCUS_ZOOM);
+  }, [map, latitude, longitude]);
   return null;
 }
 
@@ -202,6 +223,8 @@ function ClusteredListingPins({ listings }) {
 
 function MapPage() {
   const { listings, isLoading, error, refreshListings } = useListings();
+  const [searchParams] = useSearchParams();
+  const focusedId = searchParams.get("listing");
   const [showBusRoutes, setShowBusRoutes] = useState(true);
   const [showRouteKey, setShowRouteKey] = useState(false);
 
@@ -218,6 +241,17 @@ function MapPage() {
     [mappableListings]
   );
   const unmappedCount = listings.length - mappableListings.length;
+  const focusedListing = focusedId
+    ? mappableListings.find((listing) => String(listing.id) === focusedId) ?? null
+    : null;
+  // The focused listing gets its own always visible pin, so keep it out of clusters.
+  const clusteredListings = useMemo(
+    () =>
+      focusedListing
+        ? mappableListings.filter((listing) => listing !== focusedListing)
+        : mappableListings,
+    [mappableListings, focusedListing]
+  );
 
   return (
     <div className="relative h-[calc(100dvh-57px)] w-full">
@@ -234,7 +268,11 @@ function MapPage() {
           url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"
         />
         <LockToNewJersey />
-        <FitToListings positions={positions} />
+        {focusedListing ? (
+          <FocusListing listing={focusedListing} />
+        ) : (
+          <FitToListings positions={positions} />
+        )}
 
         {showBusRoutes && (
           <>
@@ -271,7 +309,21 @@ function MapPage() {
           </>
         )}
 
-        <ClusteredListingPins listings={mappableListings} />
+        <ClusteredListingPins listings={clusteredListings} />
+
+        {focusedListing && (
+          <Marker
+            key={`focused-${focusedListing.id}`}
+            position={[focusedListing.latitude, focusedListing.longitude]}
+            icon={createSelectedPriceIcon(focusedListing)}
+            zIndexOffset={1000}
+            eventHandlers={{ add: (event) => event.target.openPopup() }}
+          >
+            <Popup>
+              <ListingPopup listing={focusedListing} />
+            </Popup>
+          </Marker>
+        )}
       </MapContainer>
 
       <div className="pointer-events-none absolute left-4 top-4 z-[1000] flex flex-col gap-2">
