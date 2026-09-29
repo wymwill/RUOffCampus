@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import {
   formatAmenityLabel,
+  formatDistanceLabel,
   formatListingPrice,
   getListingMapPath,
   normalizeListing,
@@ -18,12 +19,7 @@ function ListingCard({ listing, isFavorited, onToggleFavorite }) {
   normalizedListing.available_from && normalizedListing.available_to
     ? `${formatDate(normalizedListing.available_from)} – ${formatDate(normalizedListing.available_to)}`
     : null;
-  const hasDistance = typeof normalizedListing.distance === "number";
-  const distanceLabel = hasDistance
-    ? normalizedListing.campus
-      ? `${normalizedListing.distance} miles from ${normalizedListing.campus}`
-      : `${normalizedListing.distance} miles from Rutgers`
-    : null;
+  const distanceLabel = formatDistanceLabel(normalizedListing);
 
   const navigate = useNavigate();
   const mapPath = getListingMapPath(normalizedListing);

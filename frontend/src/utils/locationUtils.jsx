@@ -1,28 +1,28 @@
-const CAMPUSES = [
-  { name: "College Ave", latitude: 40.50343, longitude: -74.45206 },
-  { name: "Busch", latitude: 40.52372, longitude: -74.45855 },
-  { name: "Livingston", latitude: 40.52531, longitude: -74.4365 },
-  { name: "Cook/Douglass", latitude: 40.48098, longitude: -74.43654 },
+// Rutgers New Brunswick student centers, geocoded from OpenStreetMap.
+// Keep in sync with backend/studentCenters.js.
+const STUDENT_CENTERS = [
+  { campus: "College Ave", name: "College Avenue Student Center", latitude: 40.502632, longitude: -74.452505 },
+  { campus: "Busch", name: "Busch Student Center", latitude: 40.52333, longitude: -74.458861 },
+  { campus: "Livingston", name: "Livingston Student Center", latitude: 40.523578, longitude: -74.437217 },
+  { campus: "Cook/Douglass", name: "Cook Student Center", latitude: 40.479127, longitude: -74.431473 },
+  { campus: "Cook/Douglass", name: "Douglass Student Center", latitude: 40.484699, longitude: -74.436666 },
 ];
 
+/** Campus of the nearest student center and the straight line miles to it. */
 export function findNearestCampusByCoordinates(latitude, longitude) {
-  return CAMPUSES.reduce((closestCampus, campus) => {
-    const distance = haversineMiles(
-      latitude,
-      longitude,
-      campus.latitude,
-      campus.longitude
-    );
+  let nearest = null;
+  for (const center of STUDENT_CENTERS) {
+    const miles = haversineMiles(latitude, longitude, center.latitude, center.longitude);
+    if (!nearest || miles < nearest.miles) nearest = { center, miles };
+  }
 
-    if (!closestCampus || distance < closestCampus.distance) {
-      return {
-        campus: campus.name,
-        distance: Number(distance.toFixed(1)),
-      };
-    }
-
-    return closestCampus;
-  }, null);
+  return nearest
+    ? {
+        campus: nearest.center.campus,
+        studentCenter: nearest.center.name,
+        distance: Number(nearest.miles.toFixed(1)),
+      }
+    : null;
 }
 
 export async function geocodeAddressToNearestCampus(address, signal) {
@@ -64,6 +64,7 @@ export async function geocodeAddressToNearestCampus(address, signal) {
         latitude,
         longitude,
         campus: nearestCampus.campus,
+        studentCenter: nearestCampus.studentCenter,
         distance: nearestCampus.distance,
         formattedAddress: topResult.display_name,
       };

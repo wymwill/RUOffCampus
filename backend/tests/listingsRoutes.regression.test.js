@@ -211,3 +211,27 @@ test('GET /listings/mine requires host_id in local mode', async () => {
   const res = await request(app.base, 'GET', '/listings/mine')
   assert.equal(res.status, 400)
 })
+
+test('campus and distance come from the nearest student center', async () => {
+  const listing = await createLocal({
+    host_id: 'campus-host',
+    // Posted as Busch, but the coordinates are on Easton Ave near College Ave
+    campus_location: 'Busch',
+    distance: 5,
+    latitude: 40.4987,
+    longitude: -74.4486,
+  })
+  const path = `/listings/${encodeURIComponent(listing.id)}`
+  try {
+    assert.equal(listing.campus, 'College Ave')
+    assert.equal(listing.nearestStudentCenter, 'College Avenue Student Center')
+    assert.ok(listing.distance < 0.5, `distance ${listing.distance}`)
+
+    const college = await request(app.base, 'GET', '/listings?campus=College%20Ave')
+    assert.ok(college.body.some((item) => item.id === listing.id))
+    const busch = await request(app.base, 'GET', '/listings?campus=Busch')
+    assert.ok(!busch.body.some((item) => item.id === listing.id))
+  } finally {
+    await request(app.base, 'DELETE', path, { body: { host_id: 'campus-host' } })
+  }
+})
