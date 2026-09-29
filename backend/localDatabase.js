@@ -9,9 +9,14 @@ const __dirname = path.dirname(__filename)
 
 const DATA_DIR = path.join(__dirname, 'data')
 // Tests set LOCAL_DB_PATH=:memory: so parallel test files don't share one file.
-export const LOCAL_DB_PATH = process.env.LOCAL_DB_PATH || path.join(DATA_DIR, 'listings.sqlite')
+// Vercel's filesystem is read only, so fall back to memory there. The app
+// uses Supabase in that case and only touches this database in local mode.
+export const LOCAL_DB_PATH =
+  process.env.LOCAL_DB_PATH || (process.env.VERCEL ? ':memory:' : path.join(DATA_DIR, 'listings.sqlite'))
 
-fs.mkdirSync(DATA_DIR, { recursive: true })
+if (LOCAL_DB_PATH !== ':memory:') {
+  fs.mkdirSync(path.dirname(LOCAL_DB_PATH), { recursive: true })
+}
 
 const db = new DatabaseSync(LOCAL_DB_PATH)
 
