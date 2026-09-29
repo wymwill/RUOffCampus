@@ -3,6 +3,7 @@ import path from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { DatabaseSync } from 'node:sqlite'
+import { withNearestStudentCenter } from './studentCenters.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -214,12 +215,12 @@ const setAppStateStatement = db.prepare(`
 `)
 
 export function listLocalListings() {
-  return selectAllListingsStatement.all().map(mapLocalRowToListing)
+  return selectAllListingsStatement.all().map((row) => withNearestStudentCenter(mapLocalRowToListing(row)))
 }
 
 export function getLocalListingById(id) {
   const row = selectListingByIdStatement.get(String(id))
-  return row ? mapLocalRowToListing(row) : null
+  return row ? withNearestStudentCenter(mapLocalRowToListing(row)) : null
 }
 
 export function createLocalListing(input) {

@@ -13,6 +13,7 @@ import {
   getRutgersImportMetadata,
   syncRutgersMarketplaceListings,
 } from '../rutgersMarketplaceImporter.js'
+import { withNearestStudentCenter } from '../studentCenters.js'
 
 const router = Router()
 const VALID_CAMPUS_LOCATIONS = ['Busch', 'College Ave', 'Livingston', 'Cook/Douglass']
@@ -77,8 +78,10 @@ function localOwnershipError(existing, req) {
   return null
 }
 
+// Campus and distance come from the nearest student center when the
+// listing has coordinates. See studentCenters.js.
 function mapSupabaseListingRow(data) {
-  return {
+  return withNearestStudentCenter({
     id: data.id,
     title: data.title,
     address: data.address || '',
@@ -108,7 +111,7 @@ function mapSupabaseListingRow(data) {
     status: data.status || 'active',
     created_at: data.created_at,
     host_id: data.host_id,
-  }
+  })
 }
 
 // Paused and taken listings stay visible to their host but leave search.
@@ -251,7 +254,7 @@ router.get('/favorites', requireSupabaseUser, async (req, res) => {
       user_id: favorite.user_id,
       listing_id: favorite.listing_id,
       created_at: favorite.created_at,
-      listing: favorite.listings ? {
+      listing: favorite.listings ? withNearestStudentCenter({
         id: favorite.listings.id,
         title: favorite.listings.title,
         price: favorite.listings.price_monthly,
@@ -262,7 +265,9 @@ router.get('/favorites', requireSupabaseUser, async (req, res) => {
         campus_location: favorite.listings.campus_location,
         description: favorite.listings.description,
         image_url: favorite.listings.image_url,
-      } : null,
+        latitude: favorite.listings.latitude,
+        longitude: favorite.listings.longitude,
+      }) : null,
     }))
 
     res.json(mappedFavorites)
@@ -307,9 +312,6 @@ router.get('/', async (req, res) => {
 
     let query = supabase.from('listings').select('*')
 
-    if (req.query.campus) {
-      query = query.ilike('campus_location', `%${req.query.campus}%`)
-    }
     if (req.query.min_price) {
       query = query.gte('price_monthly', Number(req.query.min_price))
     }
@@ -331,7 +333,15 @@ router.get('/', async (req, res) => {
       return res.status(400).json({ error: error.message })
     }
 
-    res.json(data.filter(isActiveListing).map(mapSupabaseListingRow))
+    // Campus is filtered after mapping because it comes from the nearest
+    // student center, not the stored campus_location column.
+    const campus = req.query.campus?.toLowerCase()
+    res.json(
+      data
+        .filter(isActiveListing)
+        .map(mapSupabaseListingRow)
+        .filter((listing) => !campus || listing.campus.toLowerCase().includes(campus))
+    )
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' })
   }
