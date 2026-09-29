@@ -9,6 +9,12 @@ Rutgers-only sublet marketplace. Students with a verified rutgers.edu email brow
 - `mobile/` Expo app
 - `supabase/migrations/` schema, RLS policies and the Rutgers sign-up gate
 
+## Deploy
+
+- `vercel.json` deploys `frontend` and `backend` as one Vercel project with services
+- The backend is public under `/api` and also serves the same routes at the root for local dev and mobile
+- Run everything locally the Vercel way with `npx vercel dev -L`
+
 ## Checks
 
 - Backend tests run with `cd backend && npm test`

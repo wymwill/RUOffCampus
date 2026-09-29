@@ -29,8 +29,12 @@ app.use((req, res, next) => {
   next()
 })
 
+// Routes are served at the root for local dev and mobile, and under /api
+// where Vercel forwards public /api/* requests without stripping the prefix.
+const api = express.Router()
+
 // Health check
-app.get('/health', async (req, res) => {
+api.get('/health', async (req, res) => {
   let importStatus
   try {
     importStatus = { source: RUTGERS_SOURCE, ...(await getRutgersImportMetadata()) }
@@ -45,9 +49,11 @@ app.get('/health', async (req, res) => {
   })
 })
 
-// Routes
-app.use('/listings', listingsRouter)
-app.use('/messages', messagingRouter)
+api.use('/listings', listingsRouter)
+api.use('/messages', messagingRouter)
+
+app.use('/api', api)
+app.use(api)
 
 // Seed / refresh imported Rutgers listings (every 12h at most).
 // Supabase mode needs SUPABASE_SERVICE_ROLE_KEY. Set RUTGERS_IMPORT_ON_START=false to skip.
@@ -70,12 +76,16 @@ if (!importOnStart) {
     })
 }
 
-// Start server
-const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+// Vercel runs the exported app as a function, so only listen when self hosted.
+if (!process.env.VERCEL) {
+  const server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+  })
 
-server.on('error', (error) => {
-  console.error(`Server failed to start on port ${PORT}:`, error)
-  process.exit(1)
-})
+  server.on('error', (error) => {
+    console.error(`Server failed to start on port ${PORT}:`, error)
+    process.exit(1)
+  })
+}
+
+export default app

@@ -1,4 +1,5 @@
-const DEFAULT_BASE = "http://localhost:3001";
+// Production builds call the backend on the same domain under /api (see vercel.json).
+const DEFAULT_BASE = import.meta.env.DEV ? "http://localhost:3001" : "/api";
 const DEFAULT_TIMEOUT_MS = 10000;
 
 export function getListingsApiBase() {
@@ -37,7 +38,7 @@ async function fetchWithTimeout(url, options = {}) {
     });
   } catch (error) {
     if (error.name === "AbortError") {
-      throw new Error("Request timed out. Check that the backend is running on port 3001.");
+      throw new Error("Request timed out. Check that the backend is running.");
     }
     throw error;
   } finally {
