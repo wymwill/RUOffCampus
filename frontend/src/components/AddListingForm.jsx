@@ -119,6 +119,7 @@ export default function AddListingForm({ onCreated, initialListing = null, onSav
         baths: Number(formData.baths || 0),
         distance: locationState.distance ?? 0,
         campus: locationState.campus,
+        nearestStudentCenter: locationState.studentCenter,
         latitude: locationState.latitude,
         longitude: locationState.longitude,
       }),
@@ -864,7 +865,8 @@ async function resolveAddressState(address, signal) {
       distance: result.distance,
       latitude: result.latitude,
       longitude: result.longitude,
-      message: `Closest campus: ${result.campus} (${result.distance} miles away)`,
+      studentCenter: result.studentCenter,
+      message: `${result.campus}. ${result.distance} miles from ${result.studentCenter}`,
     };
   } catch (error) {
     if (error.name === "AbortError") throw error;
@@ -882,13 +884,14 @@ function buildInitialLocationState(listing) {
     status: "resolved",
     requestAddress: address,
     campus,
+    studentCenter: listing.nearestStudentCenter || "",
     distance,
     latitude: listing.latitude ?? null,
     longitude: listing.longitude ?? null,
     message:
       distance != null
-        ? `Closest campus: ${campus} (${distance} miles away)`
-        : `Closest campus: ${campus}`,
+        ? `${campus}. ${distance} miles from ${listing.nearestStudentCenter || "campus"}`
+        : `${campus}`,
   };
 }
 

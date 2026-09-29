@@ -122,3 +122,14 @@ function normalizeImageEntry(image, index) {
 
   return null;
 }
+
+/** "College Ave · 0.4 mi to College Avenue Student Center" style distance text. */
+export function formatDistanceLabel(listing) {
+  if (!listing || typeof listing.distance !== "number") return null;
+  if (listing.nearestStudentCenter) {
+    return `${listing.campus} · ${listing.distance} mi to ${listing.nearestStudentCenter}`;
+  }
+  return listing.campus
+    ? `${listing.distance} miles from ${listing.campus}`
+    : `${listing.distance} miles from Rutgers`;
+}

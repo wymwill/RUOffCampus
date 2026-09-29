@@ -1,15 +1,10 @@
-import { formatAmenityLabel } from "../utils/listingUtils";
+import { formatAmenityLabel, formatDistanceLabel } from "../utils/listingUtils";
 
 const CardDescription = ({ foundListing }) => {
   const activeAmenities = Object.entries(foundListing.amenities ?? {})
     .filter(([, value]) => value)
     .map(([key]) => formatAmenityLabel(key));
-  const hasDistance = typeof foundListing.distance === "number";
-  const distanceLabel = hasDistance
-    ? foundListing.campus
-      ? `${foundListing.distance} miles from ${foundListing.campus}`
-      : `${foundListing.distance} miles from Rutgers`
-    : null;
+  const distanceLabel = formatDistanceLabel(foundListing);
 
   return (
     <div className="flex flex-col gap-6">
