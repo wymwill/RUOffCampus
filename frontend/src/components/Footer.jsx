@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import Icon from "./ui/Icon";
 
 const BROWSE_LINKS = [
-  { to: "/", label: "All listings" },
+  { to: "/listings", label: "All listings" },
   { to: "/map", label: "Map view" },
   { to: "/favorites", label: "Saved listings" },
   { to: "/listings/new", label: "Post your sublet" },

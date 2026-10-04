@@ -5,7 +5,7 @@ import { isRutgersEmail } from "../utils/rutgersEmail";
 import Icon from "./ui/Icon";
 
 const NAV_LINKS = [
-  { to: "/", label: "Listings", end: true },
+  { to: "/listings", label: "Listings", end: true },
   { to: "/map", label: "Map View" },
   { to: "/favorites", label: "Favorites" },
   { to: "/inbox", label: "Inbox" },

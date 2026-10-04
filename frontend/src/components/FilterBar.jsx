@@ -50,7 +50,7 @@ function ViewToggle({ view }) {
   return (
     <div className="flex shrink-0 items-center rounded-full bg-surface-low p-1 shadow-inner">
       <Link
-        to="/"
+        to="/listings"
         aria-label="List view"
         className={item(view === "list")}
         aria-current={view === "list" ? "page" : undefined}
