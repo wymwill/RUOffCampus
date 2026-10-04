@@ -3,6 +3,7 @@ import ErrorPage from "./ErrorPage";
 import CardDescription from "../components/CardDescription";
 import Sidebar from "../components/Sidebar";
 import ListingImageGallery from "../components/ListingImageGallery";
+import Icon from "../components/ui/Icon";
 import { useListings } from "../context/ListingsContext";
 
 const CardInfo = () => {
@@ -12,11 +13,15 @@ const CardInfo = () => {
 
   if (foundListing) {
     return (
-      <div className="bg-white">
-        <div className="mx-auto max-w-[1600px] px-6 py-8">
+      <div className="bg-canvas">
+        <div className="mx-auto max-w-[1600px] px-4 py-8 md:px-8">
           <div className="grid grid-cols-1 gap-8">
-            <Link to="/" className="w-fit text-lg font-medium text-red-600">
-              ← Back to Search
+            <Link
+              to="/"
+              className="flex w-fit items-center gap-1 text-sm font-semibold text-scarlet hover:text-scarlet-dark"
+            >
+              <Icon name="arrow_back" className="text-[18px]" />
+              Back to listings
             </Link>
 
             <div className="w-full">

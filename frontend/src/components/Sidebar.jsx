@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { formatListingPrice, getListingMapPath } from "../utils/listingUtils";
 import MessageHostButton from "./MessageHostButton";
+import Icon from "./ui/Icon";
 
 const Sidebar = ({ foundListing }) => {
   const hasPhone = Boolean(foundListing.landlordNum);
@@ -9,13 +10,14 @@ const Sidebar = ({ foundListing }) => {
   const mapPath = getListingMapPath(foundListing);
 
   return (
-    <div className="sticky top-24 h-fit rounded-2xl bg-gray-100 p-6">
-        <h2 className="mb-6 text-3xl font-bold text-[#cc0033]">
+    <div className="sticky top-[calc(var(--header-h)+1.5rem)] h-fit rounded-2xl border border-slate-200 bg-white p-6 shadow-card">
+        <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">Rent</p>
+        <h2 className="mb-6 text-[32px] font-extrabold leading-10 tracking-[-0.02em] text-scarlet">
             {formatListingPrice(foundListing, "/month")}
         </h2>
         <div>
-            <h2 className="font-bold">
-                Contact Landlord
+            <h2 className="font-bold text-midnight">
+                Contact
             </h2>
         </div>
         <div>
@@ -40,41 +42,31 @@ const Sidebar = ({ foundListing }) => {
               </span>
             )}
         </div>
-        <div className="flex flex-col gap-5 pt-5">
+        <div className="flex flex-col gap-3 pt-6">
+            {/* Imported listings are contacted on their source site. Student
+                listings are contacted through in-app messages. */}
             {hasSourceUrl ? (
               <a
                 href={foundListing.sourceUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="mb-3 block w-full rounded-lg bg-[#cc0033] py-3 text-center font-medium text-white transition-colors hover:bg-[#a80029]"
+                className="flex w-full items-center justify-center gap-1.5 rounded-full bg-scarlet py-3 text-center font-semibold text-white shadow-scarlet transition-colors hover:bg-scarlet-dark"
               >
-                View Original Listing
-              </a>
-            ) : (
-              <button className="mb-3 w-full rounded-lg bg-[#cc0033] py-3 font-medium text-white transition-colors hover:bg-[#a80029]">
-                Request Tour
-              </button>
-            )}
-            {hasSourceUrl ? (
-              <a
-                href={foundListing.sourceUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="block w-full rounded-lg border border-[#cc0033] py-3 text-center font-medium text-[#cc0033] transition-colors hover:bg-[#cc0033] hover:text-white"
-              >
-                Open Source Page
+                View original listing
+                <Icon name="open_in_new" className="text-[18px]" />
               </a>
             ) : (
               <MessageHostButton
                 listing={foundListing}
-                className="w-full rounded-lg border border-[#cc0033] py-3 font-medium text-[#cc0033] transition-colors hover:bg-[#cc0033] hover:text-white disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400 disabled:hover:bg-transparent"
+                className="w-full rounded-full bg-scarlet py-3 font-semibold text-white shadow-scarlet transition-colors hover:bg-scarlet-dark disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
               />
             )}
             {mapPath && (
               <Link
                 to={mapPath}
-                className="block w-full rounded-lg border border-slate-300 bg-white py-3 text-center font-medium text-slate-700 transition-colors hover:border-slate-400 hover:text-slate-900"
+                className="flex w-full items-center justify-center gap-1.5 rounded-full border border-slate-200 bg-white py-3 text-center font-semibold text-midnight shadow-card transition-colors hover:bg-surface-low"
               >
+                <Icon name="location_on" className="text-[18px]" />
                 View on map
               </Link>
             )}
