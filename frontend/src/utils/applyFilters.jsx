@@ -1,7 +1,24 @@
 import { listingMatchesDates } from "./dateRange";
+import { NEAR_TRANSIT_MINUTES } from "./transit";
+
+function matchesSearch(listing, search) {
+  const query = search.trim().toLowerCase();
+  if (!query) return true;
+  return [listing.title, listing.address, listing.campus, listing.nearestStop?.name]
+    .filter(Boolean)
+    .some((text) => text.toLowerCase().includes(query));
+}
 
 export default function applyFilters(listings, filters) {
   return listings.filter((listing) => {
+    if (!matchesSearch(listing, filters.search ?? "")) return false;
+    if (
+      filters.nearTransit &&
+      !(listing.nearestStop && listing.nearestStop.walkMinutes <= NEAR_TRANSIT_MINUTES)
+    ) {
+      return false;
+    }
+
     const [minPrice, maxPrice] = filters.price;
     const listingBeds = Number(listing.beds ?? listing.bedrooms ?? 0);
     const listingPropertyType = (listing.propertyType || "").toLowerCase();

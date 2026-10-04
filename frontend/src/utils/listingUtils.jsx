@@ -1,3 +1,6 @@
+import busData from "../data/busRoutes.json";
+import { findNearestStop } from "./transit";
+
 export const DEFAULT_LISTING_IMAGE =
   "https://images.unsplash.com/photo-1502672023488-70e25813eb80?auto=format&fit=crop&w=1200&q=80";
 
@@ -48,6 +51,10 @@ export function normalizeListing(listing) {
     available_to: listing.available_to || "",
     latitude: listing.latitude ? toNumber(listing.latitude) : null,
     longitude: listing.longitude ? toNumber(listing.longitude) : null,
+    nearestStop:
+      listing.nearestStop !== undefined
+        ? listing.nearestStop
+        : findNearestStop(listing.latitude, listing.longitude, busData.stops),
     images,
     image: primaryImage,
     sourceName: listing.sourceName?.trim?.() || "",

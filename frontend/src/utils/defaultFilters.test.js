@@ -32,3 +32,18 @@ test('bar filters are active but not counted as more filters', () => {
     assert.equal(hasActiveFilters(filters), true);
   }
 });
+
+test('search and transit count as active bar filters', () => {
+  const searched = createDefaultFilters();
+  searched.search = 'Easton';
+  assert.equal(hasActiveFilters(searched), true);
+  assert.equal(countMoreFilters(searched), 0);
+
+  const transit = createDefaultFilters();
+  transit.nearTransit = true;
+  assert.equal(hasActiveFilters(transit), true);
+
+  const blank = createDefaultFilters();
+  blank.search = '   ';
+  assert.equal(hasActiveFilters(blank), false);
+});
