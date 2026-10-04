@@ -1,11 +1,78 @@
 @import "tailwindcss";
 
+/*
+ * Scarlet Living design tokens. Red is remapped to Rutgers Scarlet and slate
+ * keeps Midnight #0f172a as 900, so existing red and slate classes follow the
+ * design without touching every component.
+ */
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-red-50: #fff1f2;
+  --color-red-100: #ffdad9;
+  --color-red-200: #ffb3b3;
+  --color-red-500: #e0103f;
+  --color-red-600: #cc0033;
+  --color-red-700: #b3002d;
+  --color-red-800: #920022;
+
+  --color-scarlet: #cc0033;
+  --color-scarlet-dark: #b3002d;
+  --color-midnight: #0f172a;
+  --color-canvas: #f8f9ff;
+  --color-surface-low: #eff4ff;
+  --color-surface: #e5eeff;
+  --color-surface-high: #dce9ff;
+  --color-verified: #047857;
+  --color-verified-soft: #ecfdf5;
+
+  --shadow-card: 0 4px 6px -1px rgb(15 23 42 / 0.04), 0 2px 4px -2px rgb(15 23 42 / 0.03);
+  --shadow-lift: 0 12px 24px -4px rgb(15 23 42 / 0.08), 0 4px 8px -2px rgb(15 23 42 / 0.03);
+  --shadow-float: 0 20px 35px rgb(15 23 42 / 0.18);
+  --shadow-scarlet: 0 2px 6px rgb(204 0 51 / 0.25);
+}
+
+/* Header height, used by sticky bars and full height pages. The header has a
+   second row for the nav on small screens. */
 :root {
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --header-h: 104px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --header-h: 80px;
+  }
 }
 
 body {
-  @apply m-0 bg-slate-50 text-slate-900 antialiased;
+  @apply m-0 bg-canvas font-sans text-slate-900 antialiased;
+}
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  user-select: none;
+}
+
+.icon-filled {
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Map page (react-leaflet) */

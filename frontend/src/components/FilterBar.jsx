@@ -211,7 +211,7 @@ function FilterBar({ filters, setFilters }) {
   };
 
   return (
-    <div className="sticky top-[57px] z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
+    <div className="sticky top-[var(--header-h)] z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
       <div className="relative mx-auto max-w-[1600px] px-4 sm:px-6">
         {/* Clipped so the full width measuring row never widens the page. */}
         <div className="pointer-events-none invisible absolute inset-x-0 top-0 h-0 overflow-hidden">

@@ -254,7 +254,7 @@ function MapPage() {
   );
 
   return (
-    <div className="relative h-[calc(100dvh-57px)] w-full">
+    <div className="relative h-[calc(100dvh-var(--header-h))] w-full">
       <MapContainer
         center={DEFAULT_CENTER}
         zoom={DEFAULT_ZOOM}
