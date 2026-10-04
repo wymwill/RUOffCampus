@@ -34,10 +34,13 @@ const FOCUS_ZOOM = 16;
 const NEW_JERSEY_BOUNDS = L.latLngBounds([38.92, -75.57], [41.36, -73.88]);
 
 const routesServingStop = new Map();
+const routeIdsServingStop = new Map();
 for (const route of busData.routes) {
   for (const stopId of busData.routeStops[route.id] ?? []) {
     if (!routesServingStop.has(stopId)) routesServingStop.set(stopId, []);
     routesServingStop.get(stopId).push(route.name);
+    if (!routeIdsServingStop.has(stopId)) routeIdsServingStop.set(stopId, []);
+    routeIdsServingStop.get(stopId).push(route.id);
   }
 }
 
@@ -150,20 +153,6 @@ function BoundsWatcher({ onChange }) {
     onChange(map.getBounds());
   }, [map, onChange]);
   return null;
-}
-
-function RecenterButton() {
-  const map = useMap();
-  return (
-    <button
-      type="button"
-      onClick={() => map.setView(DEFAULT_CENTER, 15)}
-      className="flex items-center gap-1.5 rounded-full bg-midnight px-4 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-white shadow-lift transition hover:bg-slate-800"
-    >
-      <Icon name="near_me" className="text-[16px] text-emerald-300" />
-      Center on College Ave
-    </button>
-  );
 }
 
 function ListingPopupCard({ listing, isFavorited, onToggleFavorite }) {
@@ -381,6 +370,20 @@ function MapPage() {
   const [focusRequest, setFocusRequest] = useState(null);
   const [showBusRoutes, setShowBusRoutes] = useState(true);
   const [showRouteKey, setShowRouteKey] = useState(false);
+  // Routes unchecked in the route key. Their lines and stops are hidden.
+  const [hiddenRouteIds, setHiddenRouteIds] = useState(() => new Set());
+  const visibleRoutes = busData.routes.filter((route) => !hiddenRouteIds.has(route.id));
+  const visibleStops = busData.stops.filter((stop) =>
+    (routeIdsServingStop.get(stop.id) ?? []).some((routeId) => !hiddenRouteIds.has(routeId))
+  );
+
+  const toggleRoute = (routeId) =>
+    setHiddenRouteIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(routeId)) next.delete(routeId);
+      else next.add(routeId);
+      return next;
+    });
   const [drawerOpen, setDrawerOpen] = useState(
     () => typeof window === "undefined" || window.innerWidth >= 768
   );
@@ -483,14 +486,14 @@ function MapPage() {
 
           {showBusRoutes && (
             <>
-              {busData.routes.map((route) => (
+              {visibleRoutes.map((route) => (
                 <Polyline
                   key={route.id}
                   positions={route.points}
                   pathOptions={{ color: route.color, weight: 3, opacity: 0.55, dashArray: "8 6" }}
                 />
               ))}
-              {busData.stops.map((stop) => (
+              {visibleStops.map((stop) => (
                 <CircleMarker
                   key={stop.id}
                   center={[stop.lat, stop.lng]}
@@ -532,12 +535,6 @@ function MapPage() {
               </Popup>
             </Marker>
           )}
-
-          <div className="leaflet-bottom leaflet-right">
-            <div className="leaflet-control mb-[104px]! mr-[10px]!">
-              <RecenterButton />
-            </div>
-          </div>
         </MapContainer>
 
         {drawerOpen ? (
@@ -660,17 +657,53 @@ function MapPage() {
                 {showRouteKey ? "Hide route key" : "Route key"}
               </button>
               {showRouteKey && (
-                <ul className="max-h-64 w-44 overflow-y-auto px-4 pb-3">
-                  {busData.routes.map((route) => (
-                    <li key={route.id} className="flex items-center gap-2 py-0.5 text-xs text-slate-600">
-                      <span
-                        className="h-2 w-2 shrink-0 rounded-full"
-                        style={{ backgroundColor: route.color }}
-                      />
-                      {route.name}
-                    </li>
-                  ))}
-                </ul>
+                <div className="w-52 px-4 pb-3">
+                  <div className="mb-1.5 flex items-center justify-between text-[11px] font-bold uppercase tracking-[0.08em]">
+                    <span className="text-slate-500">
+                      {visibleRoutes.length} of {busData.routes.length} shown
+                    </span>
+                    <span className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setHiddenRouteIds(new Set())}
+                        className="text-scarlet hover:text-scarlet-dark"
+                      >
+                        All
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setHiddenRouteIds(new Set(busData.routes.map((route) => route.id)))}
+                        className="text-scarlet hover:text-scarlet-dark"
+                      >
+                        None
+                      </button>
+                    </span>
+                  </div>
+                  <ul className="no-scrollbar max-h-64 overflow-y-auto">
+                    {busData.routes.map((route) => {
+                      const isVisible = !hiddenRouteIds.has(route.id);
+                      return (
+                        <li key={route.id}>
+                          <label className="flex cursor-pointer items-center gap-2 rounded-lg px-1 py-1 text-xs text-slate-700 hover:bg-surface-low">
+                            <input
+                              type="checkbox"
+                              checked={isVisible}
+                              onChange={() => toggleRoute(route.id)}
+                              className="h-3.5 w-3.5 rounded accent-scarlet"
+                            />
+                            <span
+                              className={`h-2.5 w-2.5 shrink-0 rounded-full ${isVisible ? "" : "opacity-30"}`}
+                              style={{ backgroundColor: route.color }}
+                            />
+                            <span className={isVisible ? "font-semibold text-midnight" : "text-slate-400"}>
+                              {route.name}
+                            </span>
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               )}
             </div>
           )}
