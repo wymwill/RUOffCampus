@@ -1,5 +1,7 @@
 export function createDefaultFilters() {
   return {
+    search: "",
+    nearTransit: false,
     // [min, max]. A null max means no upper limit.
     price: [0, null],
     beds: "any",
@@ -33,6 +35,8 @@ export function hasActiveFilters(filters) {
   const defaults = createDefaultFilters();
   return (
     countMoreFilters(filters) > 0 ||
+    Boolean(filters.search.trim()) ||
+    filters.nearTransit ||
     filters.beds !== defaults.beds ||
     filters.campus !== defaults.campus ||
     filters.price[0] !== defaults.price[0] ||

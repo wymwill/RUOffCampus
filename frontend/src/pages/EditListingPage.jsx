@@ -51,8 +51,8 @@ function EditListingPage() {
     <div className="mx-auto max-w-[1800px] px-6 py-10">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-red-600">Edit your sublet</p>
-          <h1 className="text-3xl font-semibold text-slate-900">
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-scarlet">Edit your sublet</p>
+          <h1 className="text-[26px] font-bold leading-8 tracking-[-0.015em] text-midnight md:text-[32px] md:leading-10">
             {listing ? listing.title : "Edit listing"}
           </h1>
         </div>
@@ -65,7 +65,7 @@ function EditListingPage() {
       </div>
 
       {error ? (
-        <p role="alert" className="rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+        <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
           {error}
         </p>
       ) : !listing ? (

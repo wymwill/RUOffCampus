@@ -1,30 +1,50 @@
 import { Link, useNavigate } from "react-router-dom";
+import { isAvailableNow, termBadge } from "../utils/listingBadges";
 import {
   formatAmenityLabel,
-  formatDistanceLabel,
   formatListingPrice,
   getListingMapPath,
   normalizeListing,
 } from "../utils/listingUtils";
+import ListingTrust from "./ListingTrust";
 import MessageHostButton from "./MessageHostButton";
+import Icon from "./ui/Icon";
+
+function formatDate(dateStr) {
+  const d = new Date(`${String(dateStr).slice(0, 10)}T00:00:00`);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
 
 function ListingCard({ listing, isFavorited, onToggleFavorite }) {
   const normalizedListing = normalizeListing(listing);
-  const lId = normalizedListing.id;
+  const navigate = useNavigate();
+  const mapPath = getListingMapPath(normalizedListing);
+  const term = termBadge(normalizedListing.available_from);
+  const stop = normalizedListing.nearestStop;
   const activeAmenities = Object.entries(normalizedListing.amenities)
     .filter(([, value]) => value)
     .map(([key]) => formatAmenityLabel(key));
-
-  const availRange =
-  normalizedListing.available_from && normalizedListing.available_to
-    ? `${formatDate(normalizedListing.available_from)} – ${formatDate(normalizedListing.available_to)}`
+  const availRange = normalizedListing.available_from
+    ? isAvailableNow(normalizedListing.available_from)
+      ? normalizedListing.available_to
+        ? `Available now to ${formatDate(normalizedListing.available_to)}`
+        : "Available now"
+      : normalizedListing.available_to
+      ? `${formatDate(normalizedListing.available_from)} to ${formatDate(normalizedListing.available_to)}`
+      : `From ${formatDate(normalizedListing.available_from)}`
     : null;
-  const distanceLabel = formatDistanceLabel(normalizedListing);
 
-  const navigate = useNavigate();
-  const mapPath = getListingMapPath(normalizedListing);
+  const specs = [
+    normalizedListing.beds === 0 ? "Studio" : `${normalizedListing.beds} Bed`,
+    normalizedListing.baths > 0 ? `${normalizedListing.baths} Bath` : null,
+    typeof normalizedListing.distance === "number" && normalizedListing.nearestStudentCenter
+      ? `${normalizedListing.distance} mi to ${normalizedListing.nearestStudentCenter}`
+      : typeof normalizedListing.distance === "number"
+        ? `${normalizedListing.distance} mi from campus`
+        : null,
+  ].filter(Boolean);
 
-  // The whole card is a link, so stop the click reaching it.
+  // The whole card is a link, so the buttons on it stop the click reaching it.
   const handleMapClick = (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -38,170 +58,99 @@ function ListingCard({ listing, isFavorited, onToggleFavorite }) {
   };
 
   return (
-    <Link to={`/listings/${lId}`}>
-      <div className="overflow-hidden rounded-lg bg-white shadow-sm">
-        <div className="relative">
+    <Link to={`/listings/${normalizedListing.id}`} className="group block h-full">
+      <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lift">
+        <div className="relative aspect-[16/10] overflow-hidden bg-surface-high">
           <img
             src={normalizedListing.image}
             alt={normalizedListing.title}
-            className="h-56 w-full object-cover"
+            loading="lazy"
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
           />
 
-          <div className="absolute left-4 top-4 rounded-full bg-red-600 px-4 py-2 text-lg font-semibold text-white shadow">
+          <span className="absolute left-4 top-4 rounded-full bg-scarlet px-3.5 py-1.5 text-sm font-bold text-white shadow-scarlet">
             {formatListingPrice(normalizedListing)}
-          </div>
+          </span>
 
           <button
             type="button"
             aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
+            aria-pressed={isFavorited}
             onClick={handleFavoriteClick}
-            className="absolute right-4 top-4 flex h-12 w-12 items-center justify-center rounded-full bg-white text-2xl shadow"
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow backdrop-blur-sm transition hover:scale-105"
           >
-            {isFavorited ? "♥" : "♡"}
+            <Icon
+              name="favorite"
+              filled={isFavorited}
+              className={`text-[22px] ${isFavorited ? "text-scarlet" : "text-midnight"}`}
+            />
           </button>
+
+          {term && (
+            <span className="absolute bottom-4 left-4 rounded-full bg-midnight/80 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white backdrop-blur-sm">
+              {term}
+            </span>
+          )}
 
           {mapPath && (
             <button
               type="button"
               onClick={handleMapClick}
-              className="absolute bottom-4 right-4 rounded-full bg-white/95 px-4 py-2 text-sm font-semibold text-slate-800 shadow transition hover:text-red-600"
+              className="absolute bottom-4 right-4 flex items-center gap-1 rounded-full bg-white/80 px-3 py-1.5 text-xs font-semibold text-midnight shadow backdrop-blur-sm transition hover:bg-white"
             >
+              <Icon name="location_on" className="text-[16px]" />
               View on map
             </button>
           )}
         </div>
 
-        <div className="p-5">
+        <div className="flex flex-1 flex-col p-6">
           <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">
-                {normalizedListing.title}
-              </h2>
-              {normalizedListing.isImported && normalizedListing.sourceName && (
-                <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  {normalizedListing.sourceName}
-                </p>
-              )}
-            </div>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium capitalize text-slate-700">
+            <h2 className="text-lg font-semibold leading-6 text-midnight">
+              {normalizedListing.title}
+            </h2>
+            <span className="shrink-0 rounded-full bg-surface-low px-2.5 py-0.5 text-xs font-semibold capitalize text-slate-600">
               {normalizedListing.propertyType}
             </span>
           </div>
 
-          {normalizedListing.address && (
-            <p className="mt-3 text-base text-slate-600">
-              {normalizedListing.address}
+          <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
+            {[normalizedListing.campus, normalizedListing.address].filter(Boolean).join(" · ")}
+          </p>
+
+          <p className="mt-3 text-sm text-slate-600">{specs.join(" • ")}</p>
+
+          {stop && (
+            <p className="mt-1.5 flex items-center gap-1 text-sm text-slate-600">
+              <Icon name="directions_bus" className="text-[16px] text-scarlet" />
+              {stop.walkMinutes} min walk to {stop.name}
             </p>
           )}
-
-          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-base text-slate-700 sm:text-lg">
-            <span>{normalizedListing.beds} beds</span>
-            {normalizedListing.baths > 0 && (
-              <span>{normalizedListing.baths} baths</span>
-            )}
-            {distanceLabel && <span>{distanceLabel}</span>}
-          </div>
 
           {activeAmenities.length > 0 && (
-            <p className="mt-4 text-sm text-slate-500">
-              {activeAmenities.join(" • ")}
-            </p>
+            <p className="mt-3 text-sm text-slate-500">{activeAmenities.join(" • ")}</p>
           )}
 
-          {(availRange || normalizedListing.landlordEmail || normalizedListing.sourceName) && (
-            <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t pt-4 text-sm">
-              <span className="truncate text-slate-600">
-                {normalizedListing.landlordEmail ||
-                  normalizedListing.sourceName ||
-                  "Contact info available in details"}
-              </span>
-              {availRange && (
-                <span className="font-medium text-red-600">
-                  {availRange}
-                </span>
-              )}
-            </div>
-          )}
+          <div className="min-h-5 flex-1" />
 
-          {normalizedListing.host_id && (
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4">
+            <ListingTrust listing={normalizedListing} />
+            {availRange && (
+              <span className="text-xs font-semibold text-scarlet">{availRange}</span>
+            )}
+          </div>
+
+          {normalizedListing.host_id && !normalizedListing.isImported && (
             <MessageHostButton
               listing={normalizedListing}
               stopPropagation
-              className="mt-5 w-full rounded-lg border border-red-600 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400 disabled:hover:bg-white"
+              className="mt-4 w-full rounded-full border border-scarlet px-4 py-2 text-sm font-semibold text-scarlet transition hover:bg-scarlet hover:text-white disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400 disabled:hover:bg-white"
             />
           )}
         </div>
-      </div>
+      </article>
     </Link>
   );
 }
-function formatDate(dateStr) {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
 
 export default ListingCard;
-
-// function ListingCard({ listing, isFavorited, onToggleFavorite }) {
-//   const lId = listing.id
-//   const availRange =
-//     listing.available_from && listing.available_to
-//       ? `${formatDate(listing.available_from)} – ${formatDate(listing.available_to)}`
-//       : null;
-
-//   return (
-//     <Link to={`/listings/${lId}`}>
-//       <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
-//         <div className="relative bg-gradient-to-br from-red-500 to-red-700 px-6 py-8">
-//           <div className="absolute bottom-4 left-4 rounded-full bg-white px-4 py-2 text-lg font-semibold text-red-600 shadow">
-//             ${listing.price}/mo
-//           </div>
-
-//           <button
-//             onClick={() => onToggleFavorite(listing.id)}
-//             className="absolute right-4 top-4 flex h-12 w-12 items-center justify-center rounded-full bg-white text-2xl shadow"
-//           >
-//             {isFavorited ? "♥" : "♡"}
-//           </button>
-//         </div>
-
-//         <div className="p-5">
-//           <h2 className="text-3xl font-semibold text-slate-900">
-//             {listing.title}
-//           </h2>
-
-//           <p className="mt-3 text-xl text-slate-600">
-//             {listing.address}{listing.city ? `, ${listing.city}` : ""}
-//           </p>
-
-//           {listing.description && (
-//             <p className="mt-2 text-base text-slate-500">{listing.description}</p>
-//           )}
-
-//           <div className="mt-4 flex flex-wrap gap-6 text-lg text-slate-700">
-//             <span>{listing.bedrooms === 0 ? "Studio" : `${listing.bedrooms} bed${listing.bedrooms > 1 ? "s" : ""}`}</span>
-//             <span>{listing.bathrooms} bath{listing.bathrooms > 1 ? "s" : ""}</span>
-//             {listing.campus && (
-//               <span className="rounded-full bg-red-50 px-3 py-0.5 text-base font-medium text-red-600">
-//                 {listing.campus}
-//               </span>
-//             )}
-//           </div>
-
-//           {availRange && (
-//             <div className="mt-5 border-t pt-4 text-lg">
-//               <span className="font-medium text-red-600">{availRange}</span>
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     </Link>
-//   );
-// }
-
-// function formatDate(dateStr) {
-//   const d = new Date(dateStr + "T00:00:00");
-//   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-// }
-
-// export default ListingCard;

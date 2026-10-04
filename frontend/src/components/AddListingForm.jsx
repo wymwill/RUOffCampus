@@ -395,8 +395,8 @@ export default function AddListingForm({ onCreated, initialListing = null, onSav
     <div className="grid gap-8 2xl:grid-cols-[minmax(0,1.15fr)_minmax(420px,0.85fr)]">
       <form onSubmit={handleSubmit} className="space-y-8">
         {!isEditing && (
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-sm font-medium text-red-600">Already wrote your sublet post?</p>
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-scarlet">Already wrote your sublet post?</p>
           <h2 className="mt-1 text-xl font-semibold text-slate-900">Start with your own post</h2>
           <p className="mt-2 text-sm text-slate-600">
             Paste a post you wrote. We'll fill a draft, not publish it. Only your Rutgers account can post
@@ -422,10 +422,10 @@ export default function AddListingForm({ onCreated, initialListing = null, onSav
           {prefillNotice && <p role="status" className="mt-3 text-sm text-slate-700">{prefillNotice}</p>}
         </section>
         )}
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-medium text-red-600">Photo Gallery</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-scarlet">Photo Gallery</p>
               <h2 className="text-2xl font-semibold text-slate-900">
                 Upload the images users will see first
               </h2>
@@ -447,7 +447,7 @@ export default function AddListingForm({ onCreated, initialListing = null, onSav
             }}
             onDragLeave={() => setIsDraggingImages(false)}
             onDrop={handleDrop}
-            className={`mt-6 rounded-3xl border-2 border-dashed p-6 text-center transition ${
+            className={`mt-6 rounded-2xl border-2 border-dashed p-6 text-center transition ${
               isDraggingImages
                 ? "border-red-500 bg-red-50"
                 : "border-slate-300 bg-slate-50"
@@ -510,7 +510,7 @@ export default function AddListingForm({ onCreated, initialListing = null, onSav
         </section>
 
         <div className="grid gap-8 xl:grid-cols-[2fr_1fr]">
-          <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
             <div className="mb-8 border-b border-slate-200 pb-8">
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">
@@ -702,7 +702,7 @@ export default function AddListingForm({ onCreated, initialListing = null, onSav
             </div>
           </section>
 
-          <aside className="rounded-3xl bg-gray-100 p-6 shadow-sm">
+          <aside className="rounded-2xl bg-surface-low p-6 shadow-sm">
             <h2 className="mb-6 text-3xl font-bold text-[#cc0033]">
               <label className="block">
                 <span className="mb-2 block text-sm font-medium uppercase tracking-[0.18em] text-slate-500">
@@ -787,8 +787,8 @@ export default function AddListingForm({ onCreated, initialListing = null, onSav
       </form>
 
       <aside className="self-start 2xl:sticky 2xl:top-24">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-sm font-medium text-red-600">Live Preview</p>
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-scarlet">Live Preview</p>
           <h2 className="mt-1 text-2xl font-semibold text-slate-900">
             What renters will see
           </h2>
