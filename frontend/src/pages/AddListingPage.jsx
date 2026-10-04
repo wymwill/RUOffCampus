@@ -19,11 +19,11 @@ function AddListingPage() {
   if (!user) {
     return (
       <div className="mx-auto max-w-[1800px] px-6 py-10">
-        <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
           <p className="text-sm font-medium uppercase tracking-[0.18em] text-red-600">
             Sign in required
           </p>
-          <h1 className="mt-4 text-3xl font-semibold text-slate-900">
+          <h1 className="mt-4 text-[26px] font-bold leading-8 tracking-[-0.015em] text-midnight md:text-[32px] md:leading-10">
             You must sign in with email before creating a listing.
           </h1>
           <p className="mt-4 text-slate-600">
@@ -44,8 +44,8 @@ function AddListingPage() {
     <div className="mx-auto max-w-[1800px] px-6 py-10">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-red-600">Post your sublet</p>
-          <h1 className="text-3xl font-semibold text-slate-900">
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-scarlet">Post your sublet</p>
+          <h1 className="text-[26px] font-bold leading-8 tracking-[-0.015em] text-midnight md:text-[32px] md:leading-10">
             Post your student sublet
           </h1>
         </div>

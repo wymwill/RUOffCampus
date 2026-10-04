@@ -56,8 +56,8 @@ function InboxPage() {
   return (
     <div className="mx-auto max-w-[1100px] px-6 py-8">
       <div className="mb-6">
-        <p className="text-sm font-medium text-red-600">Messages</p>
-        <h1 className="text-3xl font-semibold text-slate-900">Inbox</h1>
+        <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-scarlet">Messages</p>
+        <h1 className="text-[26px] font-bold leading-8 tracking-[-0.015em] text-midnight md:text-[32px] md:leading-10">Inbox</h1>
       </div>
 
       {error && (

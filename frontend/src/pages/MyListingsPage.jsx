@@ -92,8 +92,8 @@ function MyListingsPage() {
     <div className="mx-auto max-w-[1600px] px-6 py-8">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-red-600">Your sublets</p>
-          <h1 className="text-3xl font-semibold text-slate-900">My listings</h1>
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-scarlet">Your sublets</p>
+          <h1 className="text-[26px] font-bold leading-8 tracking-[-0.015em] text-midnight md:text-[32px] md:leading-10">My listings</h1>
           <p className="mt-1 text-sm text-slate-600">
             Paused and taken listings are hidden from search. You can relist them anytime.
           </p>
@@ -107,17 +107,17 @@ function MyListingsPage() {
       </div>
 
       {error && (
-        <p role="alert" className="mb-6 rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+        <p role="alert" className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
           {error}
         </p>
       )}
 
       {isLoading ? (
-        <div className="rounded-3xl border border-slate-200 bg-white p-12 text-center text-slate-600">
+        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-600">
           Loading your listings...
         </div>
       ) : listings.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-12 text-center text-slate-600">
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center text-slate-600">
           You haven't posted a sublet yet.
         </div>
       ) : (
@@ -128,7 +128,7 @@ function MyListingsPage() {
             return (
               <li
                 key={listing.id}
-                className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center"
+                className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center"
               >
                 <img
                   src={listing.image}
