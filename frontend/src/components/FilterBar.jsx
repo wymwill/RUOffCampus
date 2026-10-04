@@ -11,10 +11,17 @@ import { NEAR_TRANSIT_MINUTES } from "../utils/transit";
 import Icon from "./ui/Icon";
 
 // Chip row filters in priority order. The last ones move into More filters first.
-const BAR_FILTERS = ["campus", "dates", "price", "beds", "transit"];
+const BAR_FILTERS = ["campus", "dates", "verified", "price", "beds", "transit"];
 const BAR_GAP = 8;
 
 const CAMPUSES = ["College Ave", "Busch", "Livingston", "Cook/Douglass"];
+const POSTED_BY = [
+  ["all", "Anyone"],
+  ["rutgers", "Rutgers verified"],
+  ["non-rutgers", "Non-Rutgers accounts"],
+  ["marketplace", "Rutgers Off-Campus Marketplace"],
+];
+
 const PROPERTY_TYPES = [
   ["all", "Any type"],
   ["apartment", "Apartment"],
@@ -86,10 +93,15 @@ function FilterBar({ view = "list", resultCount, sticky = true }) {
     price: minPrice > 0 || maxPrice != null,
     beds: filters.beds !== "any",
     transit: filters.nearTransit,
+    verified: filters.postedBy === "rutgers",
   };
   const overflowKeys = BAR_FILTERS.filter((key) => !barKeys.includes(key));
+  // Posted by already counts as a More filter, so the verified chip only
+  // changes the count by not double counting it while it sits in the bar.
   const moreCount =
-    countMoreFilters(filters) + overflowKeys.filter((key) => isFilterActive[key]).length;
+    countMoreFilters(filters) -
+    (barKeys.includes("verified") && isFilterActive.verified ? 1 : 0) +
+    overflowKeys.filter((key) => key !== "verified" && isFilterActive[key]).length;
 
   // Measure every chip in a hidden copy of the row, then keep as many as fit
   // the space left beside the Reset and filters buttons.
@@ -258,6 +270,22 @@ function FilterBar({ view = "list", resultCount, sticky = true }) {
             <option value="3">3+ beds</option>
           </select>
         );
+      case "verified":
+        return (
+          <button
+            type="button"
+            aria-pressed={isFilterActive.verified}
+            onClick={() => update({ postedBy: isFilterActive.verified ? "all" : "rutgers" })}
+            className={
+              isFilterActive.verified
+                ? chipClass(true)
+                : `${chipBase} rounded-full bg-verified-soft text-verified hover:bg-emerald-100`
+            }
+          >
+            <Icon name="verified" filled className="text-[15px]" />
+            Rutgers verified only
+          </button>
+        );
       case "transit":
         return (
           <button
@@ -371,6 +399,25 @@ function FilterBar({ view = "list", resultCount, sticky = true }) {
                 ))}
               </div>
             )}
+            <fieldset className="sm:col-span-2 lg:col-span-3">
+              <legend className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
+                Posted by
+              </legend>
+              <div className="flex flex-wrap gap-2">
+                {POSTED_BY.map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={filters.postedBy === value}
+                    onClick={() => update({ postedBy: value })}
+                    className={chipClass(filters.postedBy === value && value !== "all")}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
             <fieldset>
               <legend className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
                 Property type

@@ -59,8 +59,8 @@ function AddListingPage() {
       </div>
 
       <p className="mb-6 max-w-2xl text-sm text-slate-600">
-        Posting uses your Rutgers account and lets interested students message you. It does not
-        verify your lease or confirm the sublet is approved by your landlord. Check your lease
+        Listings from a confirmed Rutgers email show a Rutgers verified badge. Other accounts can post
+        too and are labeled as non-Rutgers. Posting does not verify your lease or confirm the sublet is approved by your landlord. Check your lease
         and get any required permission before posting.
       </p>
       <AddListingForm

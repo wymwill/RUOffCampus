@@ -81,8 +81,8 @@ test('unread counts and last message are correct past 500 total messages', async
     conversation_participants: [
       { conversation_id: 'busy', profile_id: ME, last_read_at: null, profiles: null },
       { conversation_id: 'busy', profile_id: HOST, last_read_at: null, profiles: null },
-      { conversation_id: 'quiet', profile_id: ME, last_read_at: minute(2), profiles: null },
-      { conversation_id: 'quiet', profile_id: HOST, last_read_at: null, profiles: null },
+      { conversation_id: 'quiet', profile_id: ME, last_read_at: minute(2), profiles: { id: ME, email: 'me@rutgers.edu', is_rutgers: true } },
+      { conversation_id: 'quiet', profile_id: HOST, last_read_at: null, profiles: { id: HOST, email: 'host@gmail.com', is_rutgers: false } },
     ],
     messages,
   })
@@ -95,6 +95,8 @@ test('unread counts and last message are correct past 500 total messages', async
   assert.equal(busy.last_message.id, 'busy-599')
   assert.equal(quiet.unread_count, 2)
   assert.equal(quiet.last_message.id, 'q4')
+  assert.equal(quiet.other_participants[0].profile.is_rutgers, false)
+  assert.equal(quiet.participants.find((p) => p.profile_id === ME).profile.is_rutgers, true)
   assert.deepEqual(conversations.map((conversation) => conversation.id), ['busy', 'quiet'])
 })
 

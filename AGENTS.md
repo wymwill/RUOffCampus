@@ -1,6 +1,6 @@
 # Agent Guide
 
-Rutgers-only sublet marketplace. Students with a verified rutgers.edu email browse, save, post and message about sublets near campus.
+Sublet marketplace for Rutgers New Brunswick. Anyone can sign up, and accounts with a confirmed rutgers.edu email are labeled Rutgers verified on listings and messages.
 
 ## Layout
 

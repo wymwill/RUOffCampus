@@ -63,6 +63,7 @@ test('confirmed scarletmail user passes and req.user is set', async () => {
   const result = await run()
   assert.equal(result.nextCalled, true)
   assert.equal(result.req.user.id, 'u1')
+  assert.equal(result.req.user.isRutgers, true)
 })
 
 test('confirmed first.last@rutgers.edu user passes', async () => {
@@ -71,8 +72,15 @@ test('confirmed first.last@rutgers.edu user passes', async () => {
   assert.equal(result.nextCalled, true)
 })
 
-test('non-Rutgers email is 403 even with a valid session', async () => {
+test('confirmed non-Rutgers email passes and is labeled as non-Rutgers', async () => {
   nextUser = { id: 'u3', email: 'someone@gmail.com', email_confirmed_at: confirmed }
+  const result = await run()
+  assert.equal(result.nextCalled, true)
+  assert.equal(result.req.user.isRutgers, false)
+})
+
+test('unconfirmed non-Rutgers email is 403', async () => {
+  nextUser = { id: 'u5', email: 'someone@gmail.com', email_confirmed_at: null }
   const result = await run()
   assert.equal(result.statusCode, 403)
   assert.equal(result.nextCalled, false)

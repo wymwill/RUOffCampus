@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../supabaseClient.js'
-import { isAllowedEmail } from '../rutgersEmail.js'
+import { isRutgersEmail } from '../rutgersEmail.js'
 
 /**
  * When connected to real Supabase: requires Authorization: Bearer <access_token>,
@@ -59,20 +59,15 @@ export async function requireSupabaseUser(req, res, next) {
     })
   }
 
-  // Rutgers-only: backstop for accounts created before the sign-up trigger
-  // existed, or if the trigger is missing in a given Supabase project.
-  if (!isAllowedEmail(user.email)) {
-    return res.status(403).json({
-      error: 'SubletMatching is limited to Rutgers email accounts.',
-    })
-  }
-
+  // Any email can sign up, but posting and messaging need a confirmed one.
   if (!user.email_confirmed_at && !user.confirmed_at) {
     return res.status(403).json({
-      error: 'Please confirm your Rutgers email before continuing.',
+      error: 'Please confirm your email before continuing.',
     })
   }
 
-  req.user = user
+  // Confirmed Rutgers emails get the Rutgers label. Everyone else is labeled
+  // as a non-Rutgers account, not blocked.
+  req.user = { ...user, isRutgers: isRutgersEmail(user.email) }
   next()
 }

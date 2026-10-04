@@ -59,12 +59,13 @@ function escapeHtml(text) {
   );
 }
 
-function isStudentListing(listing) {
-  return Boolean(listing.host_id) && !listing.isImported;
+// Green dot on pins posted by a confirmed Rutgers email.
+function isRutgersListing(listing) {
+  return !listing.isImported && listing.hostIsRutgers === true;
 }
 
 function createPriceIcon(listing, isSelected) {
-  const dot = isStudentListing(listing) && !isSelected ? '<span class="listing-price-pin-dot"></span>' : "";
+  const dot = isRutgersListing(listing) && !isSelected ? '<span class="listing-price-pin-dot"></span>' : "";
   const icon = isSelected
     ? '<span class="material-symbols-outlined" style="font-size:16px">location_on</span>'
     : "";

@@ -2,6 +2,8 @@ export function createDefaultFilters() {
   return {
     search: "",
     nearTransit: false,
+    // "all", "rutgers", "non-rutgers" or "marketplace".
+    postedBy: "all",
     // [min, max]. A null max means no upper limit.
     price: [0, null],
     beds: "any",
@@ -26,6 +28,7 @@ export function countMoreFilters(filters) {
   const defaults = createDefaultFilters();
   let count = 0;
   if (filters.propertyType !== defaults.propertyType) count += 1;
+  if (filters.postedBy !== defaults.postedBy) count += 1;
   if (filters.dates.includeUndated !== defaults.dates.includeUndated) count += 1;
   count += Object.values(filters.amenities).filter(Boolean).length;
   return count;

@@ -47,12 +47,12 @@ function Footer() {
             <span className="text-lg font-semibold text-midnight">RU Off-Campus</span>
           </div>
           <p className="mt-3 text-sm leading-relaxed text-slate-600">
-            Student to student sublets and off-campus listings near Rutgers New Brunswick.
-            Posting and messaging need a confirmed Rutgers email.
+            Sublets and off-campus listings near Rutgers New Brunswick. Anyone can join, and
+            accounts with a confirmed Rutgers email are labeled Rutgers verified.
           </p>
           <p className="mt-4 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-verified">
             <Icon name="verified_user" className="text-[16px]" />
-            Rutgers email accounts only
+            Rutgers verified accounts labeled
           </p>
         </div>
 

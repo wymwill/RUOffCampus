@@ -1,21 +1,18 @@
-// Rutgers-only sign-up. Mirrors backend/rutgersEmail.js and the
-// enforce_rutgers_email_domain trigger in Supabase (the real enforcement).
-// Allowed: rutgers.edu and any subdomain, e.g. scarletmail.rutgers.edu.
-const ALLOWED_DOMAINS = (import.meta.env.VITE_ALLOWED_EMAIL_DOMAINS || "rutgers.edu")
+// Rutgers email detection for labels. Mirrors backend/rutgersEmail.js.
+// Anyone can sign up. rutgers.edu and its subdomains (scarletmail.rutgers.edu,
+// ...) count as Rutgers. Other people see the trusted flag from Supabase,
+// which also needs a confirmed email.
+const env = import.meta.env ?? {};
+const RUTGERS_DOMAINS = (env.VITE_RUTGERS_EMAIL_DOMAINS || env.VITE_ALLOWED_EMAIL_DOMAINS || "rutgers.edu")
   .split(",")
   .map((domain) => domain.trim().toLowerCase().replace(/^@/, ""))
   .filter(Boolean);
 
-export const RUTGERS_EMAIL_HINT =
-  "Use your Rutgers email (netid@scarletmail.rutgers.edu or first.last@rutgers.edu). Only verified Rutgers students can join.";
-
-export function isAllowedEmail(email) {
+export function isRutgersEmail(email, domains = RUTGERS_DOMAINS) {
   if (typeof email !== "string") return false;
   const normalized = email.trim().toLowerCase();
   const at = normalized.lastIndexOf("@");
   if (at <= 0 || at === normalized.length - 1) return false;
   const domain = normalized.slice(at + 1);
-  return ALLOWED_DOMAINS.some(
-    (allowed) => domain === allowed || domain.endsWith(`.${allowed}`)
-  );
+  return domains.some((rutgers) => domain === rutgers || domain.endsWith(`.${rutgers}`));
 }

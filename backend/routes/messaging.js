@@ -321,13 +321,7 @@ export async function listConversations(supabaseClient, currentUserId, onlyConve
       profile_id,
       joined_at,
       last_read_at,
-      profiles (
-        id,
-        email,
-        name,
-        full_name,
-        avatar_url
-      )
+      profiles (*)
     `)
     .in('conversation_id', conversationIds)
 
@@ -470,6 +464,12 @@ function mapParticipant(participant) {
           name: participant.profiles.name,
           full_name: participant.profiles.full_name,
           avatar_url: participant.profiles.avatar_url,
+          // Trusted flag kept in sync with the confirmed auth email by a
+          // database trigger. Null before that migration runs.
+          is_rutgers:
+            typeof participant.profiles.is_rutgers === 'boolean'
+              ? participant.profiles.is_rutgers
+              : null,
         }
       : null,
   }

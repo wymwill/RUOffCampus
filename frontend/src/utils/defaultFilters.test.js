@@ -47,3 +47,11 @@ test('search and transit count as active bar filters', () => {
   blank.search = '   ';
   assert.equal(hasActiveFilters(blank), false);
 });
+
+test('posted by counts as a more filter', () => {
+  const filters = createDefaultFilters();
+  assert.equal(filters.postedBy, 'all');
+  filters.postedBy = 'rutgers';
+  assert.equal(countMoreFilters(filters), 1);
+  assert.equal(hasActiveFilters(filters), true);
+});
