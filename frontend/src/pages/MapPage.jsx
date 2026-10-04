@@ -610,7 +610,7 @@ function MapPage() {
 
             <div className="flex shrink-0 justify-end border-t border-slate-100 px-4 py-2.5">
               <Link
-                to="/"
+                to="/listings"
                 className="flex items-center gap-1 text-sm font-semibold text-scarlet hover:text-scarlet-dark"
               >
                 See all listings

@@ -17,7 +17,7 @@ const CardInfo = () => {
         <div className="mx-auto max-w-[1600px] px-4 py-8 md:px-8">
           <div className="grid grid-cols-1 gap-8">
             <Link
-              to="/"
+              to="/listings"
               className="flex w-fit items-center gap-1 text-sm font-semibold text-scarlet hover:text-scarlet-dark"
             >
               <Icon name="arrow_back" className="text-[18px]" />

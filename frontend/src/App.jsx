@@ -1,3 +1,4 @@
+import HomePage from "./pages/HomePage";
 import ListingPage from "./pages/ListingPage";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import ErrorPage from "./pages/ErrorPage";
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
+        element: <HomePage />,
+      },
+      {
+        path: "listings",
         element: <ListingPage />,
       },
       {
