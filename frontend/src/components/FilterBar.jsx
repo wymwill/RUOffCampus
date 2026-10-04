@@ -92,7 +92,7 @@ function FilterBar({ view = "list", resultCount, sticky = true }) {
     countMoreFilters(filters) + overflowKeys.filter((key) => isFilterActive[key]).length;
 
   // Measure every chip in a hidden copy of the row, then keep as many as fit
-  // the space left beside the Reset button.
+  // the space left beside the Reset and filters buttons.
   useLayoutEffect(() => {
     const row = rowRef.current;
     const slot = slotRef.current;
@@ -295,14 +295,13 @@ function FilterBar({ view = "list", resultCount, sticky = true }) {
           </div>
         </div>
 
-        {/* Search keeps at least 200px. On narrow phones the switch and filters
-            button wrap onto the line below it. */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-3">
-          <label className="relative min-w-0 flex-1 basis-[200px] md:max-w-xl">
+        {/* Search and the List and Map switch never wrap. Search shrinks first. */}
+        <div className="flex items-center gap-2 pt-3 sm:gap-3">
+          <label className="relative min-w-0 flex-1 md:max-w-xl">
             <span className="sr-only">Search listings</span>
             <Icon
               name="search"
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[20px] text-slate-500"
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[20px] text-slate-500"
             />
             <input
               type="search"
@@ -310,34 +309,15 @@ function FilterBar({ view = "list", resultCount, sticky = true }) {
               onChange={(e) => update({ search: e.target.value })}
               placeholder="Search street, address or bus stop (e.g. The Yard)"
               title="Search street, address or bus stop"
-              className="w-full rounded-full bg-surface-low py-2 pl-11 pr-4 text-sm text-midnight shadow-inner outline-none transition placeholder:text-slate-500 focus:bg-surface focus:ring-2 focus:ring-midnight"
+              className="w-full rounded-full bg-surface-low py-2 pl-10 pr-4 text-sm text-midnight shadow-inner outline-none transition placeholder:text-slate-500 focus:bg-surface focus:ring-2 focus:ring-midnight"
             />
           </label>
           <div className="hidden flex-1 md:block" />
           <ViewToggle view={view} />
-          <button
-            type="button"
-            onClick={() => setMoreOpen((open) => !open)}
-            aria-expanded={moreOpen}
-            aria-controls="more-filters"
-            className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm transition ${
-              moreOpen || moreCount > 0
-                ? "bg-midnight text-white"
-                : "bg-surface text-midnight hover:bg-surface-high"
-            }`}
-          >
-            <Icon name="tune" className="text-[18px]" />
-            <span className="hidden sm:inline">
-              {resultCount != null ? `${resultCount} available` : "Filters"}
-            </span>
-            {moreCount > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-scarlet px-1.5 text-[11px] leading-none text-white">
-                {moreCount}
-              </span>
-            )}
-          </button>
         </div>
 
+        {/* Chips that fit, then Reset, then the filters button, which always
+            sits at the right end. Chips that don't fit move into its panel. */}
         <div ref={rowRef} className="flex items-center gap-2 py-2.5">
           <div ref={slotRef} className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
             {barKeys.map((key) => (
@@ -350,9 +330,32 @@ function FilterBar({ view = "list", resultCount, sticky = true }) {
             type="button"
             onClick={() => setFilters(createDefaultFilters())}
             disabled={!hasActiveFilters(filters)}
-            className="shrink-0 px-2 text-xs font-semibold text-scarlet hover:text-scarlet-dark disabled:invisible"
+            className="shrink-0 px-1 text-xs font-semibold text-scarlet hover:text-scarlet-dark disabled:invisible"
           >
             Reset
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMoreOpen((open) => !open)}
+            aria-expanded={moreOpen}
+            aria-controls="more-filters"
+            className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm transition ${
+              moreOpen || moreCount > 0
+                ? "bg-midnight text-white"
+                : "bg-surface text-midnight hover:bg-surface-high"
+            }`}
+          >
+            <Icon name="tune" className="text-[18px]" />
+            <span className="sm:hidden">Filters</span>
+            <span className="hidden sm:inline">
+              {resultCount != null ? `${resultCount} available` : "More filters"}
+            </span>
+            {moreCount > 0 && (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-scarlet px-1.5 text-[11px] leading-none text-white">
+                {moreCount}
+              </span>
+            )}
           </button>
         </div>
 
