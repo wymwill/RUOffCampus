@@ -295,8 +295,10 @@ function FilterBar({ view = "list", resultCount, sticky = true }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 pt-3">
-          <label className="relative min-w-0 flex-1 md:max-w-xl">
+        {/* Search keeps at least 200px. On narrow phones the switch and filters
+            button wrap onto the line below it. */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-3">
+          <label className="relative min-w-0 flex-1 basis-[200px] md:max-w-xl">
             <span className="sr-only">Search listings</span>
             <Icon
               name="search"
