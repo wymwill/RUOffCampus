@@ -18,7 +18,7 @@ const importedRow = {
 }
 const userRow = {
   id: 'b2', title: 'My sublet', price_monthly: 900, price_label: null, beds: 1, baths: 1,
-  property_type: 'room', source: 'user', is_imported: false, host_id: 'u1', images: [],
+  property_type: 'room', source: 'user', is_imported: false, host_id: 'u1', host_is_rutgers: true, images: [],
   amenities: {}, created_at: '2026-09-23T00:00:00Z',
 }
 
@@ -59,6 +59,8 @@ test('GET /listings marks imported rows and keeps user rows as before', async ()
   assert.equal(imported.nearestStudentCenter, 'College Avenue Student Center')
   assert.ok(imported.distance < 0.7, `distance ${imported.distance}`)
   assert.equal(user.nearestStudentCenter, null)
+  assert.equal(user.hostIsRutgers, true)
+  assert.equal(imported.hostIsRutgers, null)
   assert.equal(user.isImported, false)
   assert.equal(user.source, 'supabase')
   assert.equal(user.sourceName, 'Supabase')

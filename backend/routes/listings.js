@@ -105,6 +105,10 @@ function mapSupabaseListingRow(data) {
     image_url: data.image_url || '',
     images: Array.isArray(data.images) ? data.images : [data.image_url].filter(Boolean),
     source: data.is_imported ? data.source : 'supabase',
+    // Set by a database trigger from the host's confirmed auth email. Null for
+    // imported listings, or before the migration that adds the column.
+    hostIsRutgers:
+      !data.is_imported && typeof data.host_is_rutgers === 'boolean' ? data.host_is_rutgers : null,
     sourceName: data.is_imported ? data.source_name || '' : 'Supabase',
     sourceUrl: data.source_url || '',
     isImported: Boolean(data.is_imported),
@@ -265,6 +269,10 @@ router.get('/favorites', requireSupabaseUser, async (req, res) => {
         campus_location: favorite.listings.campus_location,
         description: favorite.listings.description,
         image_url: favorite.listings.image_url,
+        hostIsRutgers:
+          !favorite.listings.is_imported && typeof favorite.listings.host_is_rutgers === 'boolean'
+            ? favorite.listings.host_is_rutgers
+            : null,
         latitude: favorite.listings.latitude,
         longitude: favorite.listings.longitude,
       }) : null,
