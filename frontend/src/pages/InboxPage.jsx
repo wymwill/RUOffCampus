@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import AccountBadge from "../components/AccountBadge";
 import { Link } from "react-router-dom";
 import { getConversations } from "../api/messagingApi";
 import { useAuth } from "../context/AuthContext";
@@ -93,8 +94,12 @@ function InboxPage() {
                     <h2 className="truncate text-lg font-semibold text-slate-900">
                       {conversation.listing?.title || "Listing conversation"}
                     </h2>
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
                       {getParticipantLabel(conversation)}
+                      <AccountBadge
+                        isRutgers={conversation.other_participants?.[0]?.profile?.is_rutgers}
+                        compact
+                      />
                     </p>
                   </div>
                   {conversation.unread_count > 0 && (

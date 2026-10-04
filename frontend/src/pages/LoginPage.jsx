@@ -3,11 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import Icon from "../components/ui/Icon";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
-import { isAllowedEmail, RUTGERS_EMAIL_HINT } from "../utils/rutgersEmail";
+import { isRutgersEmail } from "../utils/rutgersEmail";
 
 // Each of these is enforced by the app, not just claimed.
 const TRUST_POINTS = [
-  { icon: "verified_user", title: "Rutgers emails only", detail: "Other domains can't sign up" },
+  { icon: "verified", title: "Rutgers verified badge", detail: "For confirmed Rutgers emails" },
   { icon: "mark_email_read", title: "Confirmed accounts", detail: "Needed to post or message" },
   { icon: "forum", title: "In-app messaging", detail: "No need to share your number" },
 ];
@@ -47,20 +47,12 @@ function LoginPage() {
         if (error) throw error;
         navigate("/");
       } else {
-        if (!isAllowedEmail(email)) {
-          throw new Error(RUTGERS_EMAIL_HINT);
-        }
         const { error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
         });
-        if (error) {
-          if (/rutgers email/i.test(error.message || "")) {
-            throw new Error(RUTGERS_EMAIL_HINT);
-          }
-          throw error;
-        }
-        setSuccessMessage("Account created. Check your Rutgers inbox for the confirmation link, then sign in.");
+        if (error) throw error;
+        setSuccessMessage("Account created. Check your inbox for the confirmation link, then sign in.");
         setMode("signin");
       }
     } catch (error) {
@@ -88,26 +80,27 @@ function LoginPage() {
               <Icon name="shield_person" className="text-[30px]" />
             </span>
             <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.08em] text-scarlet">
-              Rutgers students only
+              Open to everyone · Rutgers verified
             </p>
             <h1 className="mt-1 text-[26px] font-bold leading-8 tracking-[-0.015em] text-midnight">
-              {isSignIn ? "Sign in to RU Off-Campus" : "Create your student account"}
+              {isSignIn ? "Sign in to RU Off-Campus" : "Create your account"}
             </h1>
             <p className="mt-2 max-w-md text-sm leading-[22px] text-slate-500">
               {isSignIn
-                ? "Save sublets, message other Rutgers students and post your own place."
-                : "Sign up with your Rutgers email to post sublets and message hosts."}
+                ? "Save sublets, message hosts and post your own place."
+                : "Any email works. Use your Rutgers email to get the Rutgers verified badge."}
             </p>
           </div>
 
           <div className="mt-8 flex gap-3 rounded-xl bg-surface-low px-4 py-4">
             <Icon name="verified_user" className="mt-0.5 text-[20px] text-verified" />
             <div className="text-sm">
-              <p className="font-semibold text-midnight">Rutgers email verification</p>
+              <p className="font-semibold text-midnight">Rutgers verified badge</p>
               <p className="mt-0.5 text-xs leading-[18px] text-slate-500">
-                Use your <span className="font-semibold text-midnight">@scarletmail.rutgers.edu</span> or{" "}
-                <span className="font-semibold text-midnight">@rutgers.edu</span> email. New accounts confirm the
-                email before posting or messaging.
+                Confirm a <span className="break-all font-semibold text-midnight">@scarletmail.rutgers.edu</span> or{" "}
+                <span className="font-semibold text-midnight">@rutgers.edu</span> email to get the badge on your
+                listings and messages. Other emails can join and are labeled as non-Rutgers accounts. Every
+                account confirms its email before posting or messaging.
               </p>
             </div>
           </div>
@@ -131,9 +124,9 @@ function LoginPage() {
           <div className="mt-6">
             <div className="mb-2 flex items-baseline justify-between">
               <label htmlFor="login-email" className="text-sm font-semibold text-midnight">
-                Rutgers email
+                Email
               </label>
-              <span className="text-xs text-slate-400">e.g. netid@scarletmail.rutgers.edu</span>
+              <span className="text-xs text-slate-400">Rutgers email recommended</span>
             </div>
             <div className="relative">
               <Icon
@@ -151,7 +144,18 @@ function LoginPage() {
                 required
               />
             </div>
-            {!isSignIn && <p className="mt-2 text-xs text-slate-500">{RUTGERS_EMAIL_HINT}</p>}
+            {!isSignIn && email.includes("@") && (
+              <p
+                className={`mt-2 flex items-center gap-1 text-xs font-semibold ${
+                  isRutgersEmail(email) ? "text-verified" : "text-amber-700"
+                }`}
+              >
+                <Icon name={isRutgersEmail(email) ? "verified" : "person"} className="text-[15px]" />
+                {isRutgersEmail(email)
+                  ? "You'll get the Rutgers verified badge after you confirm this email."
+                  : "This account will be labeled as a non-Rutgers account."}
+              </p>
+            )}
           </div>
 
           <div className="mt-5">
@@ -222,8 +226,8 @@ function LoginPage() {
             {isSubmitting
               ? "Please wait..."
               : isSignIn
-                ? "Sign in to student account"
-                : "Create student account"}
+                ? "Sign in"
+                : "Create account"}
             {!isSubmitting && <Icon name="arrow_forward" className="text-[18px]" />}
           </button>
 
@@ -234,7 +238,7 @@ function LoginPage() {
               onClick={switchMode}
               className="font-semibold text-scarlet hover:text-scarlet-dark"
             >
-              {isSignIn ? "Create student account" : "Sign in"}
+              {isSignIn ? "Create an account" : "Sign in"}
             </button>
           </div>
         </form>

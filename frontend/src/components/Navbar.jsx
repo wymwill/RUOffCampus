@@ -1,6 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
+import { isRutgersEmail } from "../utils/rutgersEmail";
 import Icon from "./ui/Icon";
 
 const NAV_LINKS = [
@@ -64,6 +65,27 @@ function Navbar() {
           >
             Post Sublet
           </Link>
+          {user && (
+            <span
+              title={user.email}
+              className={`hidden items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.06em] lg:inline-flex ${
+                isRutgersEmail(user.email) && user.email_confirmed_at
+                  ? "bg-verified-soft text-verified"
+                  : "bg-amber-50 text-amber-800"
+              }`}
+            >
+              <Icon
+                name={isRutgersEmail(user.email) && user.email_confirmed_at ? "verified" : "person"}
+                filled
+                className="text-[14px]"
+              />
+              {isRutgersEmail(user.email)
+                ? user.email_confirmed_at
+                  ? "Rutgers account"
+                  : "Rutgers, unconfirmed"
+                : "Non-Rutgers account"}
+            </span>
+          )}
           {user ? (
             <button
               type="button"

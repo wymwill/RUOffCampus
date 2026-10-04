@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import AccountBadge from "../components/AccountBadge";
+import Icon from "../components/ui/Icon";
 import { Link, useParams } from "react-router-dom";
 import {
   getConversations,
@@ -129,8 +131,10 @@ function ConversationPage() {
     );
   }
 
+  const otherIsRutgers = activeConversation?.other_participants?.[0]?.profile?.is_rutgers ?? null;
+
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-64px)] max-w-[1000px] flex-col px-6 py-6">
+    <div className="mx-auto flex min-h-[calc(100dvh-var(--header-h))] max-w-[1000px] flex-col px-6 py-6">
       <div className="mb-4">
         <Link to="/inbox" className="text-sm font-semibold text-red-600">
           Back to Inbox
@@ -139,13 +143,24 @@ function ConversationPage() {
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-200 px-5 py-4">
-          <p className="text-sm text-slate-500">
+          <p className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
             {activeConversation ? getParticipantLabel(activeConversation) : "Conversation"}
+            <AccountBadge isRutgers={otherIsRutgers} compact />
           </p>
           <h1 className="truncate text-xl font-semibold text-slate-900">
             {activeConversation?.listing?.title || "Listing conversation"}
           </h1>
         </div>
+
+        {otherIsRutgers === false && (
+          <div className="flex gap-2 border-b border-amber-200 bg-amber-50 px-5 py-3 text-sm text-amber-900">
+            <Icon name="info" className="mt-0.5 text-[18px]" />
+            <p>
+              This person isn't using a Rutgers email. Be careful: see the place in person or on a live
+              video call before paying, and never send a deposit by gift card, wire or crypto.
+            </p>
+          </div>
+        )}
 
         {error && (
           <div className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700">

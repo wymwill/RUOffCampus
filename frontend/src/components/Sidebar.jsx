@@ -42,6 +42,13 @@ const Sidebar = ({ foundListing }) => {
               </span>
             )}
         </div>
+        {!foundListing.isImported && foundListing.hostIsRutgers === false && (
+            <p className="mt-5 flex gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900">
+              <Icon name="info" className="mt-0.5 text-[16px]" />
+              Posted by a non-Rutgers account. See the place before paying and never send a deposit
+              by gift card, wire or crypto.
+            </p>
+        )}
         <div className="flex flex-col gap-3 pt-6">
             {/* Imported listings are contacted on their source site. Student
                 listings are contacted through in-app messages. */}

@@ -9,9 +9,24 @@ function matchesSearch(listing, search) {
     .some((text) => text.toLowerCase().includes(query));
 }
 
+// Separates Rutgers verified hosts, non-Rutgers hosts and imported listings.
+export function matchesPostedBy(listing, postedBy = "all") {
+  switch (postedBy) {
+    case "rutgers":
+      return !listing.isImported && listing.hostIsRutgers === true;
+    case "non-rutgers":
+      return !listing.isImported && listing.hostIsRutgers === false;
+    case "marketplace":
+      return Boolean(listing.isImported);
+    default:
+      return true;
+  }
+}
+
 export default function applyFilters(listings, filters) {
   return listings.filter((listing) => {
     if (!matchesSearch(listing, filters.search ?? "")) return false;
+    if (!matchesPostedBy(listing, filters.postedBy)) return false;
     if (
       filters.nearTransit &&
       !(listing.nearestStop && listing.nearestStop.walkMinutes <= NEAR_TRANSIT_MINUTES)
