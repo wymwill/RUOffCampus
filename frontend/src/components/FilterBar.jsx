@@ -42,13 +42,23 @@ function ViewToggle({ view }) {
     }`;
   return (
     <div className="flex shrink-0 items-center rounded-full bg-surface-low p-1 shadow-inner">
-      <Link to="/" className={item(view === "list")} aria-current={view === "list" ? "page" : undefined}>
+      <Link
+        to="/"
+        aria-label="List view"
+        className={item(view === "list")}
+        aria-current={view === "list" ? "page" : undefined}
+      >
         <Icon name="view_list" className="text-[16px]" />
-        List
+        <span className="hidden sm:inline">List</span>
       </Link>
-      <Link to="/map" className={item(view === "map")} aria-current={view === "map" ? "page" : undefined}>
+      <Link
+        to="/map"
+        aria-label="Map view"
+        className={item(view === "map")}
+        aria-current={view === "map" ? "page" : undefined}
+      >
         <Icon name="map" className={`text-[16px] ${view === "map" ? "text-emerald-300" : ""}`} />
-        Map
+        <span className="hidden sm:inline">Map</span>
       </Link>
     </div>
   );
@@ -297,6 +307,7 @@ function FilterBar({ view = "list", resultCount, sticky = true }) {
               value={filters.search}
               onChange={(e) => update({ search: e.target.value })}
               placeholder="Search street, address or bus stop (e.g. The Yard)"
+              title="Search street, address or bus stop"
               className="w-full rounded-full bg-surface-low py-2 pl-11 pr-4 text-sm text-midnight shadow-inner outline-none transition placeholder:text-slate-500 focus:bg-surface focus:ring-2 focus:ring-midnight"
             />
           </label>
