@@ -6,6 +6,7 @@ const BROWSE_LINKS = [
   { to: "/map", label: "Map view" },
   { to: "/favorites", label: "Saved listings" },
   { to: "/listings/new", label: "Post your sublet" },
+  { to: "/feedback", label: "Give feedback" },
 ];
 
 const ACCOUNT_LINKS = [

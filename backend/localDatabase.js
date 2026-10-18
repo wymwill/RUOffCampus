@@ -67,6 +67,14 @@ db.exec(`
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS local_feedback (
+    id TEXT PRIMARY KEY,
+    message TEXT NOT NULL,
+    email TEXT,
+    page TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
 `)
 
 // Databases created before listing status existed need the column added.
@@ -203,6 +211,11 @@ const countImportedListingsBySourceStatement = db.prepare(`
     AND is_imported = 1
 `)
 
+const insertFeedbackStatement = db.prepare(`
+  INSERT INTO local_feedback (id, message, email, page)
+  VALUES (?, ?, ?, ?)
+`)
+
 const getAppStateStatement = db.prepare(`
   SELECT value FROM local_app_state
   WHERE key = ?
@@ -302,6 +315,17 @@ export function getLocalListingCount() {
 
 export function getImportedListingCountBySource(source) {
   return Number(countImportedListingsBySourceStatement.get(source)?.count || 0)
+}
+
+export function createLocalFeedback(input) {
+  const id = randomUUID()
+  insertFeedbackStatement.run(
+    id,
+    input.message,
+    input.email ?? null,
+    input.page ?? null
+  )
+  return { id }
 }
 
 export function getAppState(key) {
