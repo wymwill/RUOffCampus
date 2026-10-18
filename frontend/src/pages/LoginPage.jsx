@@ -83,7 +83,7 @@ function LoginPage() {
               Open to everyone · Rutgers verified
             </p>
             <h1 className="mt-1 text-[26px] font-bold leading-8 tracking-[-0.015em] text-midnight">
-              {isSignIn ? "Sign in to RU Off-Campus" : "Create your account"}
+              {isSignIn ? "Sign in to ScarletSublet" : "Create your account"}
             </h1>
             <p className="mt-2 max-w-md text-sm leading-[22px] text-slate-500">
               {isSignIn

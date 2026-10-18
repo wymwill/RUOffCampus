@@ -487,7 +487,7 @@ async function fetchHtml(url) {
   const response = await fetch(url, {
     headers: {
       'accept': 'text/html,application/xhtml+xml',
-      'user-agent': 'SubletMatchingBot/1.0 (+local development import)',
+      'user-agent': 'ScarletSubletBot/1.0 (+local development import)',
     },
   })
 

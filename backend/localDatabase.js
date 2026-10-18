@@ -240,7 +240,7 @@ export function createLocalListing(input) {
   const record = normalizeLocalRecord(input, {
     id: input.id || `local:${randomUUID()}`,
     source: 'user',
-    sourceName: 'Sublet Finder',
+    sourceName: 'ScarletSublet',
     sourceListingId: input.source_listing_id || null,
     sourceUrl: input.source_url || null,
     isImported: false,

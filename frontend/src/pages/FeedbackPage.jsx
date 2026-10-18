@@ -60,7 +60,7 @@ function FeedbackPage() {
               Tell us what to fix next
             </h1>
             <p className="mt-2 max-w-md text-sm leading-[22px] text-slate-500">
-              RU Off-Campus is a small student project. Every note lands with the people building it.
+              ScarletSublet is a small student project. Every note lands with the people building it.
             </p>
           </div>
 

@@ -45,7 +45,7 @@ function Footer() {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-scarlet text-white">
               <Icon name="home" filled className="text-[20px]" />
             </span>
-            <span className="text-lg font-semibold text-midnight">RU Off-Campus</span>
+            <span className="text-lg font-semibold text-midnight">ScarletSublet</span>
           </div>
           <p className="mt-3 text-sm leading-relaxed text-slate-600">
             Sublets and off-campus listings near Rutgers New Brunswick. Anyone can join, and
@@ -90,7 +90,7 @@ function Footer() {
 
       <div className="border-t border-slate-200">
         <p className="mx-auto max-w-[1600px] px-4 py-5 text-xs text-slate-500 md:px-8">
-          RU Off-Campus is a student project and is not affiliated with or endorsed by Rutgers,
+          ScarletSublet is a student project and is not affiliated with or endorsed by Rutgers,
           The State University of New Jersey. Always check your lease and get any required
           landlord permission before subletting.
         </p>

@@ -18,7 +18,7 @@ function Brand() {
         <Icon name="home" filled className="text-[22px]" />
       </span>
       <span className="hidden flex-col leading-tight sm:flex">
-        <span className="text-lg font-semibold text-midnight">RU Off-Campus</span>
+        <span className="text-lg font-semibold text-midnight">ScarletSublet</span>
         <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-scarlet">
           New Brunswick Living
         </span>
