@@ -24,6 +24,8 @@ test('maps price, beds, baths, type, location and link', () => {
   assert.equal(house.distance, 0.5)
   assert.equal(house.latitude, 40.5001)
   assert.equal(house.available_from, '2027-06-01')
+  assert.equal(house.listedAt, new Date(1790000000 * 1000).toISOString())
+  assert.equal(byId['60760'].listedAt, null)
   assert.equal(
     house.sourceUrl,
     'https://offcampushousing.rutgers.edu/city/new-brunswick-nj/listing/146-hamilton-st-new-brunswick-nj-08901-70138'

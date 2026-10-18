@@ -58,6 +58,10 @@ test('upserts all listings keyed on source + source_listing_id with the service 
     assert.ok(row.source_listing_id)
     assert.ok(Number.isInteger(row.price_monthly) && row.price_monthly >= 0)
   }
+  const house = upsert.body.find((row) => row.source_listing_id === '70138')
+  const easton = upsert.body.find((row) => row.source_listing_id === '60760')
+  assert.equal(house.created_at, new Date(1790000000 * 1000).toISOString())
+  assert.equal(easton.created_at, null)
 })
 
 test('prunes only stale imported rows from the same source', async () => {

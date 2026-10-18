@@ -169,6 +169,8 @@ function mapEmbeddedListing(record) {
     latitude: toNullableFloat(record.lat),
     longitude: toNullableFloat(record.lng),
     available_from: /^\d{4}-\d{2}-\d{2}$/.test(record.date || '') ? record.date : null,
+    // When the listing was first added to the Rutgers marketplace (unix seconds).
+    listedAt: unixSecondsToIso(record.prop_created),
     amenities: {
       Parking: Boolean(record.parking_allowed || propertyFeatures.parking),
       Laundry: Boolean(record.laundry_allowed) || /laundry|washer|dryer/.test(features),
@@ -232,6 +234,12 @@ function fixRunTogetherAddress(value) {
 function toNumber(value) {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : 0
+}
+
+function unixSecondsToIso(value) {
+  const seconds = Number(value)
+  if (!Number.isFinite(seconds) || seconds <= 0) return null
+  return new Date(seconds * 1000).toISOString()
 }
 
 function toNullableFloat(value) {

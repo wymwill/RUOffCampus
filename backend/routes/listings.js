@@ -333,7 +333,8 @@ router.get('/', async (req, res) => {
       query = query.eq('property_type', req.query.property_type)
     }
 
-    query = query.order('created_at', { ascending: false })
+    // Newest first. Rows without a date go last instead of Postgres's default first.
+    query = query.order('created_at', { ascending: false, nullsFirst: false })
 
     const { data, error } = await query
 

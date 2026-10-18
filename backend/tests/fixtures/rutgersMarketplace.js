@@ -22,6 +22,7 @@ export const LISTING_RECORDS = {
     lat: '40.5001',
     lng: '-74.4501',
     date: '2027-06-01',
+    prop_created: 1790000000,
     featured_image: '2026-09/front.jpg',
     images: ['2026-09/front.jpg', '2026-09/kitchen.jpg'],
     laundry_allowed: true,
