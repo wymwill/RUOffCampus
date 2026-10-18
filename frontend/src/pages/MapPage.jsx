@@ -30,6 +30,12 @@ const DEFAULT_CENTER = [40.5007, -74.4474];
 const DEFAULT_ZOOM = 14;
 const FOCUS_ZOOM = 16;
 
+// The Esri gray basemap only has real tiles up to zoom 16. Past that it
+// returns "Map data not yet available" images, so Leaflet scales the zoom 16
+// tiles up instead, and zooming stops at 18.
+const TILE_NATIVE_MAX_ZOOM = 16;
+const MAP_MAX_ZOOM = 18;
+
 // New Jersey's bounding box. The map can't be panned or zoomed out past it.
 const NEW_JERSEY_BOUNDS = L.latLngBounds([38.92, -75.57], [41.36, -73.88]);
 
@@ -458,10 +464,12 @@ function MapPage() {
     <div className="flex h-[calc(100dvh-var(--header-h))] flex-col overflow-hidden">
       <FilterBar view="map" sticky={false} resultCount={isLoading ? null : mappableListings.length} />
 
-      <div className="relative flex-1 overflow-hidden bg-surface-low">
+      {/* isolate keeps Leaflet panes and popups below the sticky header. */}
+      <div className="relative isolate flex-1 overflow-hidden bg-surface-low">
         <MapContainer
           center={DEFAULT_CENTER}
           zoom={DEFAULT_ZOOM}
+          maxZoom={MAP_MAX_ZOOM}
           scrollWheelZoom
           zoomControl={false}
           maxBounds={NEW_JERSEY_BOUNDS}
@@ -471,6 +479,8 @@ function MapPage() {
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.esri.com/">Esri</a>'
             url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+            maxNativeZoom={TILE_NATIVE_MAX_ZOOM}
+            maxZoom={MAP_MAX_ZOOM}
           />
           <ZoomControl position="bottomright" />
           <LockToNewJersey />
