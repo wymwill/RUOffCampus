@@ -214,6 +214,8 @@ function SectionHeading({ eyebrow, icon, title, action }) {
   );
 }
 
+// isolate keeps Leaflet's internal z indexes (400 and up) inside this card so
+// the map can't draw over the sticky header while scrolling.
 function CommuteMap() {
   const navigate = useNavigate();
   return (
@@ -221,7 +223,7 @@ function CommuteMap() {
       type="button"
       onClick={() => navigate("/map")}
       aria-label="Open the map with Rutgers bus routes"
-      className="group relative block h-80 w-full overflow-hidden rounded-2xl border border-slate-200 shadow-lift md:h-96"
+      className="group relative isolate block h-80 w-full overflow-hidden rounded-2xl border border-slate-200 shadow-lift md:h-96"
     >
       <MapContainer
         center={[40.5045, -74.4505]}
