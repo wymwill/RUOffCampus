@@ -1,6 +1,6 @@
 # ScarletSublet
 
-Student-to-student sublet marketplace for Rutgers. Live at https://sublet-matching.vercel.app
+Student-to-student sublet marketplace for Rutgers. Live at https://scarletsublet.vercel.app
 
 Sublet supply at Rutgers is scattered across Facebook groups, GroupMe, and Reddit, with no way to tell if a listing is real. ScarletSublet gates sign-up to Rutgers email addresses (@scarletmail.rutgers.edu and *.rutgers.edu), so every listing comes from a verified Rutgers student.
 
