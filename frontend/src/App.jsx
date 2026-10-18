@@ -14,6 +14,7 @@ import MapPage from "./pages/MapPage";
 import ConversationPage from "./pages/ConversationPage";
 import MyListingsPage from "./pages/MyListingsPage";
 import EditListingPage from "./pages/EditListingPage";
+import FeedbackPage from "./pages/FeedbackPage";
 
 const router = createBrowserRouter([
   {
@@ -72,6 +73,10 @@ const router = createBrowserRouter([
       {
         path: "my-listings",
         element: <MyListingsPage />,
+      },
+      {
+        path: "feedback",
+        element: <FeedbackPage />,
       },
     ],
   },
