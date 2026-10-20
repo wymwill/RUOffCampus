@@ -4,6 +4,8 @@ export function createDefaultFilters() {
     nearTransit: false,
     // "all", "rutgers", "non-rutgers" or "marketplace".
     postedBy: "all",
+    // "newest" or "popular" (most requested). Ordering, not a filter.
+    sort: "newest",
     // [min, max]. A null max means no upper limit.
     price: [0, null],
     beds: "any",

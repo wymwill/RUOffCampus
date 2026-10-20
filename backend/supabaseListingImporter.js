@@ -98,5 +98,8 @@ function toSupabaseRow(source, listing, importedAt) {
     latitude: Number.isFinite(listing.latitude) ? listing.latitude : null,
     longitude: Number.isFinite(listing.longitude) ? listing.longitude : null,
     available_from: listing.available_from || null,
+    // When the listing was added to the Rutgers marketplace, not when we
+    // imported it. Always sent because bulk upserts use one column list.
+    created_at: listing.listedAt || null,
   }
 }

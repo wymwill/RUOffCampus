@@ -293,7 +293,7 @@ export function replaceImportedListings(source, listings, metadata = {}) {
         sourceListingId: listing.sourceListingId,
         sourceUrl: listing.sourceUrl,
         isImported: true,
-        createdAt: metadata.fetchedAt || listing.created_at || new Date().toISOString(),
+        createdAt: listing.listedAt || listing.created_at || metadata.fetchedAt || new Date().toISOString(),
       })
 
       insertListingStatement.run(record)

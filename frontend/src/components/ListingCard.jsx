@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { isAvailableNow, termBadge } from "../utils/listingBadges";
+import { formatAdded, isAvailableNow, termBadge } from "../utils/listingBadges";
 import {
   formatAmenityLabel,
   formatListingPrice,
@@ -20,6 +20,7 @@ function ListingCard({ listing, isFavorited, onToggleFavorite }) {
   const navigate = useNavigate();
   const mapPath = getListingMapPath(normalizedListing);
   const term = termBadge(normalizedListing.available_from);
+  const added = formatAdded(normalizedListing.created_at);
   const stop = normalizedListing.nearestStop;
   const activeAmenities = Object.entries(normalizedListing.amenities)
     .filter(([, value]) => value)
@@ -68,8 +69,24 @@ function ListingCard({ listing, isFavorited, onToggleFavorite }) {
             className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
           />
 
-          <span className="absolute left-4 top-4 rounded-full bg-scarlet px-3.5 py-1.5 text-sm font-bold text-white shadow-scarlet">
-            {formatListingPrice(normalizedListing)}
+          <span className="absolute left-4 top-4 flex items-center gap-1.5">
+            <span className="rounded-full bg-scarlet px-3.5 py-1.5 text-sm font-bold text-white shadow-scarlet">
+              {formatListingPrice(normalizedListing)}
+            </span>
+            {normalizedListing.hot && (
+              <span
+                title="One of the most saved and messaged listings in the last 2 weeks"
+                className="flex items-center gap-0.5 rounded-full bg-amber-500 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white shadow"
+              >
+                <Icon name="local_fire_department" filled className="text-[14px]" />
+                Hot
+              </span>
+            )}
+            {added?.isNew && (
+              <span className="rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white shadow">
+                New
+              </span>
+            )}
           </span>
 
           <button
@@ -129,6 +146,13 @@ function ListingCard({ listing, isFavorited, onToggleFavorite }) {
 
           {activeAmenities.length > 0 && (
             <p className="mt-3 text-sm text-slate-500">{activeAmenities.join(" • ")}</p>
+          )}
+
+          {added && (
+            <p className="mt-2 flex items-center gap-1 text-xs text-slate-500" title={added.date}>
+              <Icon name="schedule" className="text-[15px]" />
+              Added {added.relative}
+            </p>
           )}
 
           <div className="min-h-5 flex-1" />

@@ -1,4 +1,4 @@
-import { isAvailableNow, termBadge } from "../utils/listingBadges";
+import { formatAdded, isAvailableNow, termBadge } from "../utils/listingBadges";
 import { formatAmenityLabel } from "../utils/listingUtils";
 import ListingTrust from "./ListingTrust";
 import Icon from "./ui/Icon";
@@ -26,6 +26,7 @@ const CardDescription = ({ foundListing }) => {
     .map(([key]) => formatAmenityLabel(key));
   const stop = foundListing.nearestStop;
   const term = termBadge(foundListing.available_from);
+  const added = formatAdded(foundListing.created_at);
   const availability = foundListing.available_from
     ? isAvailableNow(foundListing.available_from)
       ? foundListing.available_to
@@ -89,6 +90,27 @@ const CardDescription = ({ foundListing }) => {
             <Fact icon="directions_bus" label="Nearest bus stop" value={`${stop.walkMinutes} min walk to ${stop.name}`} />
           )}
           {availability && <Fact icon="calendar_month" label="Available" value={availability} />}
+          {(foundListing.interest?.saves > 0 || foundListing.interest?.messages > 0) && (
+            <Fact
+              icon="local_fire_department"
+              label={foundListing.hot ? "Hot · last 2 weeks" : "Interest · last 2 weeks"}
+              value={[
+                foundListing.interest.saves > 0 &&
+                  `${foundListing.interest.saves} save${foundListing.interest.saves === 1 ? "" : "s"}`,
+                foundListing.interest.messages > 0 &&
+                  `${foundListing.interest.messages} message request${foundListing.interest.messages === 1 ? "" : "s"}`,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            />
+          )}
+          {added && (
+            <Fact
+              icon="schedule"
+              label={foundListing.isImported ? "Added to marketplace" : "Posted"}
+              value={`${added.date} · ${added.relative}`}
+            />
+          )}
         </div>
       </div>
 
