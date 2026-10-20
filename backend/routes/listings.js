@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { supabase, isSupabaseConfigured, createSupabaseClientWithToken } from '../supabaseClient.js'
+import { supabase, supabaseAdmin, isSupabaseConfigured, createSupabaseClientWithToken } from '../supabaseClient.js'
 import { requireSupabaseUser } from '../middleware/requireSupabaseUser.js'
 import {
   createLocalListing,
@@ -14,6 +14,7 @@ import {
   syncRutgersMarketplaceListings,
 } from '../rutgersMarketplaceImporter.js'
 import { withNearestStudentCenter } from '../studentCenters.js'
+import { getListingInterest } from '../listingInterest.js'
 
 const router = Router()
 const VALID_CAMPUS_LOCATIONS = ['Busch', 'College Ave', 'Livingston', 'Cook/Douglass']
@@ -345,12 +346,12 @@ router.get('/', async (req, res) => {
     // Campus is filtered after mapping because it comes from the nearest
     // student center, not the stored campus_location column.
     const campus = req.query.campus?.toLowerCase()
-    res.json(
-      data
-        .filter(isActiveListing)
-        .map(mapSupabaseListingRow)
-        .filter((listing) => !campus || listing.campus.toLowerCase().includes(campus))
-    )
+    const listings = data
+      .filter(isActiveListing)
+      .map(mapSupabaseListingRow)
+      .filter((listing) => !campus || listing.campus.toLowerCase().includes(campus))
+
+    res.json(await withInterest(listings))
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' })
   }
@@ -639,6 +640,27 @@ router.delete('/:id', requireSupabaseUser, async (req, res) => {
     res.status(500).json({ error: 'Internal server error' })
   }
 })
+
+// Adds recent saves and messages plus a hot flag. Needs the service role key
+// because favorites and conversations are private per user. If counting
+// fails, listings are still returned, just without the flag.
+async function withInterest(listings) {
+  if (!supabaseAdmin) return listings
+  try {
+    const { interest, hot } = await getListingInterest(supabaseAdmin)
+    return listings.map((listing) => {
+      const item = interest.get(String(listing.id))
+      return {
+        ...listing,
+        interest: { saves: item?.saves ?? 0, messages: item?.messages ?? 0 },
+        hot: hot.has(String(listing.id)),
+      }
+    })
+  } catch (error) {
+    console.warn(`Could not load listing interest: ${error.message}`)
+    return listings
+  }
+}
 
 function getAuthenticatedSupabase(req) {
   const accessToken =
