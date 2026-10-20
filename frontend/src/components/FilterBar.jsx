@@ -401,6 +401,29 @@ function FilterBar({ view = "list", resultCount, sticky = true }) {
             )}
             <fieldset className="sm:col-span-2 lg:col-span-3">
               <legend className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
+                Sort by
+              </legend>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  ["newest", "Newest"],
+                  ["popular", "Most requested"],
+                ].map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={(filters.sort ?? "newest") === value}
+                    onClick={() => update({ sort: value })}
+                    className={chipClass((filters.sort ?? "newest") === value)}
+                  >
+                    {value === "popular" && <Icon name="local_fire_department" className="text-[15px]" />}
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset className="sm:col-span-2 lg:col-span-3">
+              <legend className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
                 Posted by
               </legend>
               <div className="flex flex-wrap gap-2">

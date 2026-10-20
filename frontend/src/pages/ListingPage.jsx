@@ -7,13 +7,17 @@ import { useFavorites } from "../context/FavoritesContext";
 import { useFilters } from "../context/FiltersContext";
 import { useListings } from "../context/ListingsContext";
 import applyFilters from "../utils/applyFilters";
+import { sortListings } from "../utils/listingSort";
 
 function ListingPage() {
   const { listings, isLoading, error, refreshListings } = useListings();
   const { favorites, toggleFavorite } = useFavorites();
   const { filters } = useFilters();
 
-  const filteredListings = useMemo(() => applyFilters(listings, filters), [listings, filters]);
+  const filteredListings = useMemo(
+    () => sortListings(applyFilters(listings, filters), filters.sort),
+    [listings, filters]
+  );
   const campusLabel = filters.campus === "all" ? "Rutgers New Brunswick" : filters.campus;
 
   return (

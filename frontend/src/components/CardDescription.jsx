@@ -90,6 +90,20 @@ const CardDescription = ({ foundListing }) => {
             <Fact icon="directions_bus" label="Nearest bus stop" value={`${stop.walkMinutes} min walk to ${stop.name}`} />
           )}
           {availability && <Fact icon="calendar_month" label="Available" value={availability} />}
+          {(foundListing.interest?.saves > 0 || foundListing.interest?.messages > 0) && (
+            <Fact
+              icon="local_fire_department"
+              label={foundListing.hot ? "Hot · last 2 weeks" : "Interest · last 2 weeks"}
+              value={[
+                foundListing.interest.saves > 0 &&
+                  `${foundListing.interest.saves} save${foundListing.interest.saves === 1 ? "" : "s"}`,
+                foundListing.interest.messages > 0 &&
+                  `${foundListing.interest.messages} message request${foundListing.interest.messages === 1 ? "" : "s"}`,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            />
+          )}
           {added && (
             <Fact
               icon="schedule"

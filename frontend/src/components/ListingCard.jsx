@@ -73,6 +73,15 @@ function ListingCard({ listing, isFavorited, onToggleFavorite }) {
             <span className="rounded-full bg-scarlet px-3.5 py-1.5 text-sm font-bold text-white shadow-scarlet">
               {formatListingPrice(normalizedListing)}
             </span>
+            {normalizedListing.hot && (
+              <span
+                title="One of the most saved and messaged listings in the last 2 weeks"
+                className="flex items-center gap-0.5 rounded-full bg-amber-500 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white shadow"
+              >
+                <Icon name="local_fire_department" filled className="text-[14px]" />
+                Hot
+              </span>
+            )}
             {added?.isNew && (
               <span className="rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white shadow">
                 New
