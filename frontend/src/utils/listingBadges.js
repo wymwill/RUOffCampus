@@ -41,3 +41,29 @@ export function pricePerBedroom(listing) {
   if (!(price > 0) || !(beds >= 2) || /person|-/.test(label)) return null;
   return `$${Math.round(price / beds).toLocaleString("en-US")} / bedroom`;
 }
+
+export const NEW_LISTING_DAYS = 7;
+
+/**
+ * When a listing was added, as { date: "Oct 3, 2026", relative: "2 days ago",
+ * isNew }. isNew means added within NEW_LISTING_DAYS. Null without a date.
+ */
+export function formatAdded(createdAt, now = new Date()) {
+  const added = new Date(createdAt);
+  if (!createdAt || Number.isNaN(added.getTime())) return null;
+
+  const days = Math.max(0, Math.floor((now - added) / 86400000));
+  let relative;
+  if (days === 0) relative = "today";
+  else if (days === 1) relative = "yesterday";
+  else if (days < 14) relative = `${days} days ago`;
+  else if (days < 60) relative = `${Math.floor(days / 7)} weeks ago`;
+  else if (days < 730) relative = `${Math.floor(days / 30)} months ago`;
+  else relative = `${Math.floor(days / 365)} years ago`;
+
+  return {
+    date: added.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+    relative,
+    isNew: days < NEW_LISTING_DAYS,
+  };
+}

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isAvailableNow, pricePerBedroom, termBadge } from './listingBadges.js';
+import { formatAdded, isAvailableNow, pricePerBedroom, termBadge } from './listingBadges.js';
 
 const TODAY = '2026-08-15';
 
@@ -26,4 +26,21 @@ test('splits whole unit prices across bedrooms', () => {
   assert.equal(pricePerBedroom({ price: 875, beds: 4, priceLabel: '$875 /person' }), null);
   assert.equal(pricePerBedroom({ price: 1650, beds: 3, priceLabel: '$1,650 - $3,300' }), null);
   assert.equal(pricePerBedroom({ price: 0, beds: 3 }), null);
+});
+
+test('formats when a listing was added and flags new ones', () => {
+  const now = new Date('2026-10-18T12:00:00Z');
+  assert.deepEqual(
+    { relative: formatAdded('2026-10-18T09:00:00Z', now).relative, isNew: formatAdded('2026-10-18T09:00:00Z', now).isNew },
+    { relative: 'today', isNew: true }
+  );
+  assert.equal(formatAdded('2026-10-17T11:00:00Z', now).relative, 'yesterday');
+  assert.equal(formatAdded('2026-10-12T12:00:00Z', now).relative, '6 days ago');
+  assert.equal(formatAdded('2026-10-12T12:00:00Z', now).isNew, true);
+  assert.equal(formatAdded('2026-10-11T12:00:00Z', now).isNew, false);
+  assert.equal(formatAdded('2026-09-20T12:00:00Z', now).relative, '4 weeks ago');
+  assert.equal(formatAdded('2026-03-14T12:00:00Z', now).relative, '7 months ago');
+  assert.equal(formatAdded('2020-01-01T00:00:00Z', now).relative, '6 years ago');
+  assert.equal(formatAdded(null, now), null);
+  assert.equal(formatAdded('not a date', now), null);
 });
