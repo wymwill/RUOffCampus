@@ -3,6 +3,7 @@ import ErrorPage from "./ErrorPage";
 import CardDescription from "../components/CardDescription";
 import Sidebar from "../components/Sidebar";
 import ListingImageGallery from "../components/ListingImageGallery";
+import AdminListingBar from "../components/AdminListingBar";
 import Icon from "../components/ui/Icon";
 import { useListings } from "../context/ListingsContext";
 
@@ -23,6 +24,8 @@ const CardInfo = () => {
               <Icon name="arrow_back" className="text-[18px]" />
               Back to listings
             </Link>
+
+            <AdminListingBar listing={foundListing} />
 
             <div className="w-full">
               <ListingImageGallery images={foundListing.images} title={foundListing.title} />

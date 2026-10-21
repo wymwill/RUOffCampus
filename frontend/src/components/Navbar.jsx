@@ -40,7 +40,7 @@ function accountStatus(user) {
 
 // Avatar button whose menu holds the account status and Sign out, so the
 // header keeps its room for the main tabs.
-function AccountMenu({ user, onSignOut }) {
+function AccountMenu({ user, isAdmin, onSignOut }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
   const status = accountStatus(user);
@@ -105,6 +105,17 @@ function AccountMenu({ user, onSignOut }) {
             <Icon name="home_work" className="text-[18px] text-slate-600" />
             My listings
           </Link>
+          {isAdmin && (
+            <Link
+              role="menuitem"
+              to="/admin"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-midnight hover:bg-surface-low"
+            >
+              <Icon name="admin_panel_settings" className="text-[18px] text-slate-600" />
+              Admin
+            </Link>
+          )}
           <button
             role="menuitem"
             type="button"
@@ -124,7 +135,7 @@ function AccountMenu({ user, onSignOut }) {
 }
 
 function Navbar() {
-  const { user, isConfigured } = useAuth();
+  const { user, isAdmin, isConfigured } = useAuth();
   const signOut = async () => {
     if (!isConfigured || !supabase) return;
     await supabase.auth.signOut();
@@ -166,7 +177,7 @@ function Navbar() {
             Post Sublet
           </Link>
           {user ? (
-            <AccountMenu user={user} onSignOut={signOut} />
+            <AccountMenu user={user} isAdmin={isAdmin} onSignOut={signOut} />
           ) : (
             <Link
               to="/login"

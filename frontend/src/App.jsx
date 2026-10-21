@@ -16,6 +16,7 @@ import ConversationPage from "./pages/ConversationPage";
 import MyListingsPage from "./pages/MyListingsPage";
 import EditListingPage from "./pages/EditListingPage";
 import FeedbackPage from "./pages/FeedbackPage";
+import AdminPage from "./pages/AdminPage";
 
 const router = createBrowserRouter([
   {
@@ -78,6 +79,10 @@ const router = createBrowserRouter([
       {
         path: "feedback",
         element: <FeedbackPage />,
+      },
+      {
+        path: "admin",
+        element: <AdminPage />,
       },
     ],
   },
