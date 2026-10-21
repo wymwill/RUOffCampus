@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { formatListingPrice, getListingMapPath } from "../utils/listingUtils";
+import HostCard from "./HostCard";
 import MessageHostButton from "./MessageHostButton";
 import Icon from "./ui/Icon";
 
@@ -42,6 +43,7 @@ const Sidebar = ({ foundListing }) => {
               </span>
             )}
         </div>
+        {!foundListing.isImported && foundListing.host_id && <HostCard listing={foundListing} />}
         {!foundListing.isImported && foundListing.hostIsRutgers === false && (
             <p className="mt-5 flex gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900">
               <Icon name="info" className="mt-0.5 text-[16px]" />

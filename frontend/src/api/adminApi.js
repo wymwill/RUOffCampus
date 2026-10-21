@@ -2,14 +2,6 @@ import { requestJson } from "./listingsApi";
 
 // Owner tools. The API checks profiles.is_admin on every call.
 
-export async function getAdminStatus(options = {}) {
-  const data = await requestJson("/admin/me", {
-    accessToken: options.accessToken,
-    fallbackError: "Could not check admin access.",
-  });
-  return data?.isAdmin === true;
-}
-
 const admin = (path, fallbackError, options = {}) =>
   requestJson(`/admin${path}`, { ...options, fallbackError });
 

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { getAdminStatus } from "../api/adminApi";
+import { getMyProfile } from "../api/profileApi";
 import { isSupabaseBrowserConfigured, supabase } from "../lib/supabaseClient";
 
 const TOKEN_KEY = "sublet_access_token";
@@ -49,34 +49,40 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // Only shows or hides admin links. The API checks admin access itself.
-  const [adminUserId, setAdminUserId] = useState(null);
+  // The signed in user's profile, for their name, photo and admin links. The
+  // API checks admin access itself, so this only changes what is shown.
+  const [profile, setProfile] = useState(null);
   const accessToken = session?.access_token;
   const userId = session?.user?.id;
   useEffect(() => {
     if (!accessToken || !userId) return undefined;
     let cancelled = false;
-    getAdminStatus({ accessToken })
-      .then((isAdmin) => {
-        if (!cancelled) setAdminUserId(isAdmin ? userId : null);
+    getMyProfile({ accessToken })
+      .then((nextProfile) => {
+        if (!cancelled) setProfile(nextProfile);
       })
       .catch(() => {
-        if (!cancelled) setAdminUserId(null);
+        if (!cancelled) setProfile(null);
       });
     return () => {
       cancelled = true;
     };
   }, [accessToken, userId]);
 
+  // A profile left over from a previous account never applies.
+  const currentProfile = profile && profile.id === userId ? profile : null;
+
   const value = useMemo(
     () => ({
       session,
       user: session?.user ?? null,
-      isAdmin: Boolean(userId) && adminUserId === userId,
+      profile: currentProfile,
+      setProfile,
+      isAdmin: currentProfile?.isAdmin === true,
       isReady,
       isConfigured: isSupabaseBrowserConfigured,
     }),
-    [adminUserId, isReady, session, userId]
+    [currentProfile, isReady, session]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

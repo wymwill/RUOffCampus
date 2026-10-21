@@ -74,3 +74,39 @@ function optimizeImage(dataUrl, mimeType) {
     image.src = dataUrl;
   });
 }
+
+const AVATAR_SIZE = 256;
+
+/** A square, center cropped JPEG data URL for a profile photo. */
+export async function fileToAvatar(file) {
+  if (!file?.type?.startsWith("image/")) throw new Error("Choose an image file.");
+  const dataUrl = await readFileAsDataUrl(file);
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      const side = Math.min(image.width, image.height);
+      const canvas = document.createElement("canvas");
+      canvas.width = AVATAR_SIZE;
+      canvas.height = AVATAR_SIZE;
+      const context = canvas.getContext("2d");
+      if (!context) {
+        reject(new Error("Could not process the photo."));
+        return;
+      }
+      context.drawImage(
+        image,
+        (image.width - side) / 2,
+        (image.height - side) / 2,
+        side,
+        side,
+        0,
+        0,
+        AVATAR_SIZE,
+        AVATAR_SIZE
+      );
+      resolve(canvas.toDataURL("image/jpeg", 0.85));
+    };
+    image.onerror = () => reject(new Error("Could not load that photo."));
+    image.src = dataUrl;
+  });
+}
