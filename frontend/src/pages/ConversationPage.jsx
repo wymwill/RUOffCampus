@@ -145,7 +145,11 @@ function ConversationPage() {
         <div className="border-b border-slate-200 px-5 py-4">
           <p className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
             {activeConversation ? getParticipantLabel(activeConversation) : "Conversation"}
-            <AccountBadge isRutgers={otherIsRutgers} compact />
+            <AccountBadge
+              isRutgers={otherIsRutgers}
+              isAdmin={activeConversation?.other_participants?.[0]?.profile?.is_admin}
+              compact
+            />
           </p>
           <h1 className="truncate text-xl font-semibold text-slate-900">
             {activeConversation?.listing?.title || "Listing conversation"}

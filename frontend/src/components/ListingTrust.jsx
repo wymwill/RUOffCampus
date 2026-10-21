@@ -21,14 +21,21 @@ function ListingTrust({ listing, compact = false }) {
   // a confirmed email, so say that much.
   if (listing.hostIsRutgers == null) {
     return (
-      <span className="flex items-center gap-1 text-xs font-semibold text-slate-500">
-        <Icon name="mark_email_read" className="text-[15px]" />
-        Confirmed email
+      <span className="flex items-center gap-1.5">
+        <AccountBadge isAdmin={listing.hostIsAdmin} compact={compact} />
+        <span className="flex items-center gap-1 text-xs font-semibold text-slate-500">
+          <Icon name="mark_email_read" className="text-[15px]" />
+          Confirmed email
+        </span>
       </span>
     );
   }
 
-  return <AccountBadge isRutgers={listing.hostIsRutgers} compact={compact} />;
+  return (
+    <span className="flex flex-wrap items-center gap-1.5">
+      <AccountBadge isRutgers={listing.hostIsRutgers} isAdmin={listing.hostIsAdmin} compact={compact} />
+    </span>
+  );
 }
 
 export default ListingTrust;
