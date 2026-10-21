@@ -120,8 +120,11 @@ function mapSupabaseListingRow(data) {
 }
 
 // Paused and taken listings stay visible to their host but leave search.
-// Rows from before the status column existed count as active.
+// Rows from before the status column existed count as active. Posted rows
+// without a host are leftover test data nobody can message, so they leave
+// search too.
 function isActiveListing(listing) {
+  if (!(listing.is_imported ?? listing.isImported) && !listing.host_id) return false
   return (listing.status || 'active') === 'active'
 }
 
