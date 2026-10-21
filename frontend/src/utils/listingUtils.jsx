@@ -15,6 +15,20 @@ function toNullableNumber(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+// Marketplace titles and addresses end in "USA", which says nothing here.
+function stripCountry(text) {
+  return String(text ?? "").trim().replace(/,?\s*USA$/i, "").trim();
+}
+
+const comparable = (text) => text.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/** True when the title already is the address, like "65 Mine St New Brunswick, NJ". */
+export function addressRepeatsTitle(listing) {
+  const street = comparable(String(listing?.address || "").split(",")[0]);
+  const title = comparable(String(listing?.title || ""));
+  return Boolean(street) && (title.includes(street) || street.includes(title));
+}
+
 export function normalizeListing(listing) {
   if (!listing) return null;
 
@@ -33,8 +47,8 @@ export function normalizeListing(listing) {
   return {
     ...listing,
     id: listing.id,
-    title: listing.title?.trim() || "Untitled listing",
-    address: listing.address?.trim() || "",
+    title: stripCountry(listing.title) || "Untitled listing",
+    address: stripCountry(listing.address),
     campus: listing.campus?.trim() || "",
     price: toNumber(listing.price, 0),
     priceLabel: listing.priceLabel?.trim?.() || listing.price_label?.trim?.() || "",
@@ -87,19 +101,27 @@ export function formatAmenityLabel(key) {
   return key.replaceAll("_", " ");
 }
 
+/**
+ * One price format for every listing: "$1,200/mo", "$2,100–3,420/mo" for
+ * ranges and "$800/person" when the marketplace prices per person.
+ */
 export function formatListingPrice(listing, suffix = "/mo") {
   const normalized = normalizeListing(listing);
   if (!normalized) return "Price unavailable";
 
-  if (normalized.priceLabel) {
-    return normalized.priceLabel === "Ask"
-      ? "Ask"
-      : normalized.priceLabel.includes("/")
-        ? normalized.priceLabel
-        : `${normalized.priceLabel}${suffix}`;
-  }
+  const label = normalized.priceLabel;
+  if (label === "Ask") return "Ask";
 
-  return normalized.price > 0 ? `$${normalized.price}${suffix}` : "Price unavailable";
+  const amounts = (label.match(/\d[\d,]*/g) ?? [])
+    .map((amount) => Number(amount.replaceAll(",", "")))
+    .filter((amount) => amount > 0);
+  if (amounts.length === 0 && normalized.price > 0) amounts.push(normalized.price);
+  if (amounts.length === 0) return label || "Price unavailable";
+
+  const unit = /person/i.test(label) ? "/person" : suffix;
+  const [low, high] = amounts;
+  const range = high && high !== low ? `–${high.toLocaleString("en-US")}` : "";
+  return `$${low.toLocaleString("en-US")}${range}${unit}`;
 }
 
 function normalizeImageEntry(image, index) {

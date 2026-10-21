@@ -30,6 +30,32 @@ export function termBadge(availableFrom, today = todayKey()) {
   return term ? `${term.label} '${match[1].slice(2)}` : null;
 }
 
+function formatDay(key, today) {
+  const date = new Date(`${key}T00:00:00`);
+  const sameYear = key.slice(0, 4) === today.slice(0, 4);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    ...(sameYear ? {} : { year: "numeric" }),
+  });
+}
+
+/**
+ * Availability in one format for every card: "Available now", "Available now
+ * to Aug 31", "From Jun 1, 2027" or "Jun 1 to Aug 31, 2027". Listings
+ * without dates say so, so every card has the same footer line.
+ */
+export function formatAvailability(availableFrom, availableTo, today = todayKey()) {
+  const from = String(availableFrom || "").slice(0, 10);
+  const to = String(availableTo || "").slice(0, 10);
+  const valid = (key) => /^\d{4}-\d{2}-\d{2}$/.test(key);
+  if (!valid(from)) return valid(to) ? `Until ${formatDay(to, today)}` : "Dates not listed";
+  if (isAvailableNow(from, today)) {
+    return valid(to) ? `Available now to ${formatDay(to, today)}` : "Available now";
+  }
+  return valid(to) ? `${formatDay(from, today)} to ${formatDay(to, today)}` : `From ${formatDay(from, today)}`;
+}
+
 /**
  * "$990 / bedroom" for whole unit prices split across 2 or more bedrooms.
  * Skips per person and range prices, which are already per person or vague.

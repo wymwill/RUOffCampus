@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { formatAdded, isAvailableNow, pricePerBedroom, termBadge } from './listingBadges.js';
+import { formatAdded, formatAvailability, isAvailableNow, pricePerBedroom, termBadge } from './listingBadges.js';
 
 const TODAY = '2026-08-15';
 
@@ -43,4 +43,13 @@ test('formats when a listing was added and flags new ones', () => {
   assert.equal(formatAdded('2020-01-01T00:00:00Z', now).relative, '6 years ago');
   assert.equal(formatAdded(null, now), null);
   assert.equal(formatAdded('not a date', now), null);
+});
+
+test('availability uses one format and adds the year when it is not this year', () => {
+  const today = '2026-10-21';
+  assert.equal(formatAvailability('', '', today), 'Dates not listed');
+  assert.equal(formatAvailability('2026-09-01', '', today), 'Available now');
+  assert.equal(formatAvailability('2026-09-01', '2026-12-31', today), 'Available now to Dec 31');
+  assert.equal(formatAvailability('2027-06-01', '', today), 'From Jun 1, 2027');
+  assert.equal(formatAvailability('2026-11-15', '2026-12-20', today), 'Nov 15 to Dec 20');
 });
