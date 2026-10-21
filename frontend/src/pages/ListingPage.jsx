@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { useMemo } from "react";
 import FilterBar from "../components/FilterBar";
 import ListingGrid from "../components/ListingGrid";
@@ -7,12 +6,12 @@ import { useFavorites } from "../context/FavoritesContext";
 import { useFilters } from "../context/FiltersContext";
 import { useListings } from "../context/ListingsContext";
 import applyFilters from "../utils/applyFilters";
-import { sortListings } from "../utils/listingSort";
+import { SORT_OPTIONS, sortListings } from "../utils/listingSort";
 
 function ListingPage() {
   const { listings, isLoading, error, refreshListings } = useListings();
   const { favorites, toggleFavorite } = useFavorites();
-  const { filters } = useFilters();
+  const { filters, setFilters } = useFilters();
 
   const filteredListings = useMemo(
     () => sortListings(applyFilters(listings, filters), filters.sort),
@@ -36,17 +35,25 @@ function ListingPage() {
                 : `${filteredListings.length} ${filteredListings.length === 1 ? "listing" : "listings"} near campus`}
             </h1>
             <p className="mt-1 text-sm text-slate-500">
-              Student sublets and Rutgers Off-Campus Marketplace listings, newest first.
+              Student sublets and Rutgers Off-Campus Marketplace listings.
             </p>
           </div>
 
-          <Link
-            to="/listings/new"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-scarlet px-6 py-3 text-sm font-semibold text-white shadow-scarlet transition hover:bg-scarlet-dark"
-          >
-            <Icon name="add" className="text-[18px]" />
-            Post your sublet
-          </Link>
+          <label className="flex shrink-0 items-center gap-2 text-sm font-semibold text-slate-600">
+            <Icon name="sort" className="text-[18px]" />
+            Sort by
+            <select
+              value={filters.sort ?? "newest"}
+              onChange={(e) => setFilters((prev) => ({ ...prev, sort: e.target.value }))}
+              className="cursor-pointer rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-midnight shadow-sm outline-none focus:ring-2 focus:ring-midnight"
+            >
+              {SORT_OPTIONS.map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         {error && (
@@ -69,6 +76,7 @@ function ListingPage() {
           </div>
         ) : (
           <ListingGrid
+            key={JSON.stringify(filters)}
             listings={filteredListings}
             favorites={favorites}
             onToggleFavorite={toggleFavorite}

@@ -27,3 +27,23 @@ test('does not change the original array', () => {
   sortListings(listings, 'popular');
   assert.deepEqual(listings, copy);
 });
+
+test('price sorts put listings without a price last', () => {
+  const priced = [
+    { id: 'a', price: 900 },
+    { id: 'ask', price: 0 },
+    { id: 'b', price: 1500 },
+  ];
+  assert.deepEqual(sortListings(priced, 'price-asc').map((l) => l.id), ['a', 'b', 'ask']);
+  assert.deepEqual(sortListings(priced, 'price-desc').map((l) => l.id), ['b', 'a', 'ask']);
+});
+
+test('available soonest and closest to campus', () => {
+  const dated = [
+    { id: 'fall', available_from: '2027-09-01', distance: 0.2 },
+    { id: 'now', available_from: '', distance: null },
+    { id: 'summer', available_from: '2027-06-01', distance: 1.4 },
+  ];
+  assert.deepEqual(sortListings(dated, 'soonest').map((l) => l.id), ['now', 'summer', 'fall']);
+  assert.deepEqual(sortListings(dated, 'closest').map((l) => l.id), ['fall', 'summer', 'now']);
+});

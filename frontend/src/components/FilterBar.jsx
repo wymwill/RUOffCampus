@@ -35,6 +35,8 @@ const chipBase =
 const chipIdle = "bg-surface-low text-midnight hover:bg-surface";
 const chipActive = "bg-midnight text-white";
 const bareInput = "bg-transparent text-xs font-semibold text-inherit outline-none [color-scheme:light]";
+const priceInput =
+  "w-16 rounded-md px-2 py-0.5 text-xs font-semibold text-inherit outline-none placeholder:text-current placeholder:opacity-60 focus:ring-2 focus:ring-midnight";
 
 // In the More filters panel a chip may wrap onto two lines on narrow screens.
 function chipClass(isActive, wraps = false) {
@@ -228,29 +230,32 @@ function FilterBar({ view = "list", resultCount, sticky = true }) {
       case "price":
         return (
           <div className={chipClass(isFilterActive.price, inPanel)}>
-            <span className="opacity-70">$</span>
-            <input
-              type="number"
-              inputMode="numeric"
-              min="0"
-              aria-label="Minimum price"
-              placeholder="Min"
-              value={minPrice || ""}
-              onChange={(e) => setPrice(0, e.target.value)}
-              className={`${bareInput} w-14 placeholder:text-current placeholder:opacity-60`}
-            />
-            <span className="opacity-60">to</span>
-            <input
-              type="number"
-              inputMode="numeric"
-              min="0"
-              aria-label="Maximum price"
-              placeholder="Max"
-              value={maxPrice ?? ""}
-              onChange={(e) => setPrice(1, e.target.value)}
-              className={`${bareInput} w-14 placeholder:text-current placeholder:opacity-60`}
-            />
-            <span className="opacity-70">/mo</span>
+            <span className="opacity-70">Price /mo</span>
+            <label className="flex items-center gap-1">
+              <span className="sr-only">Minimum price</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                min="0"
+                placeholder="$ Min"
+                value={minPrice || ""}
+                onChange={(e) => setPrice(0, e.target.value)}
+                className={`${priceInput} ${isFilterActive.price ? "bg-white/15" : "bg-white"}`}
+              />
+            </label>
+            <span aria-hidden="true" className="opacity-60">–</span>
+            <label className="flex items-center gap-1">
+              <span className="sr-only">Maximum price</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                min="0"
+                placeholder="$ Max"
+                value={maxPrice ?? ""}
+                onChange={(e) => setPrice(1, e.target.value)}
+                className={`${priceInput} ${isFilterActive.price ? "bg-white/15" : "bg-white"}`}
+              />
+            </label>
           </div>
         );
       case "beds":
@@ -276,13 +281,17 @@ function FilterBar({ view = "list", resultCount, sticky = true }) {
             type="button"
             aria-pressed={isFilterActive.verified}
             onClick={() => update({ postedBy: isFilterActive.verified ? "all" : "rutgers" })}
-            className={
+            className={`${chipBase} rounded-full border ${
               isFilterActive.verified
-                ? chipClass(true)
-                : `${chipBase} rounded-full bg-verified-soft text-verified hover:bg-emerald-100`
-            }
+                ? "border-verified bg-verified text-white"
+                : "border-slate-300 bg-white text-slate-600 hover:border-verified hover:text-verified"
+            }`}
           >
-            <Icon name="verified" filled className="text-[15px]" />
+            <Icon
+              name={isFilterActive.verified ? "check_circle" : "verified"}
+              filled={isFilterActive.verified}
+              className="text-[15px]"
+            />
             Rutgers verified only
           </button>
         );
@@ -399,29 +408,6 @@ function FilterBar({ view = "list", resultCount, sticky = true }) {
                 ))}
               </div>
             )}
-            <fieldset className="sm:col-span-2 lg:col-span-3">
-              <legend className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
-                Sort by
-              </legend>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  ["newest", "Newest"],
-                  ["popular", "Most requested"],
-                ].map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    aria-pressed={(filters.sort ?? "newest") === value}
-                    onClick={() => update({ sort: value })}
-                    className={chipClass((filters.sort ?? "newest") === value)}
-                  >
-                    {value === "popular" && <Icon name="local_fire_department" className="text-[15px]" />}
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
-
             <fieldset className="sm:col-span-2 lg:col-span-3">
               <legend className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
                 Posted by
