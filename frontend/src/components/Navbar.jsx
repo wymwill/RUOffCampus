@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
 import { isRutgersEmail } from "../utils/rutgersEmail";
 import Icon from "./ui/Icon";
+import LogoMark from "./ui/LogoMark";
 
 const NAV_LINKS = [
   { to: "/listings", label: "Listings", end: true },
@@ -14,9 +15,7 @@ const NAV_LINKS = [
 function Brand() {
   return (
     <Link to="/" className="flex shrink-0 items-center gap-2.5">
-      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-scarlet text-white shadow-scarlet">
-        <Icon name="home" filled className="text-[22px]" />
-      </span>
+      <LogoMark className="h-10 w-10 text-scarlet" />
       <span className="hidden flex-col leading-tight sm:flex">
         <span className="text-lg font-semibold text-midnight">ScarletSublet</span>
         <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-scarlet">

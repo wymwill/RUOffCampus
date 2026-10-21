@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import Icon from "./ui/Icon";
+import LogoMark from "./ui/LogoMark";
 
 const BROWSE_LINKS = [
   { to: "/listings", label: "All listings" },
@@ -42,9 +43,7 @@ function Footer() {
       <div className="mx-auto grid max-w-[1600px] gap-10 px-4 py-12 md:grid-cols-2 md:px-8 lg:grid-cols-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-scarlet text-white">
-              <Icon name="home" filled className="text-[20px]" />
-            </span>
+            <LogoMark className="h-9 w-9 text-scarlet" />
             <span className="text-lg font-semibold text-midnight">ScarletSublet</span>
           </div>
           <p className="mt-3 text-sm leading-relaxed text-slate-600">
