@@ -5,6 +5,7 @@ import listingsRouter from './routes/listings.js'
 import messagingRouter from './routes/messaging.js'
 import feedbackRouter from './routes/feedback.js'
 import adminRouter from './routes/admin.js'
+import profileRouter from './routes/profile.js'
 import { isSupabaseConfigured, supabaseAdmin } from './supabaseClient.js'
 import {
   warmRutgersListingCache,
@@ -55,6 +56,7 @@ api.use('/listings', listingsRouter)
 api.use('/messages', messagingRouter)
 api.use('/feedback', feedbackRouter)
 api.use('/admin', adminRouter)
+api.use('/profile', profileRouter)
 
 app.use('/api', api)
 app.use(api)
