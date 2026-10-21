@@ -68,12 +68,6 @@ beforeEach(() => {
 
 const headers = { authorization: 'Bearer token-123' }
 
-test('/admin/me reports whether the caller is an admin', async () => {
-  assert.deepEqual((await request(app.base, 'GET', '/admin/me', { headers })).body, { isAdmin: false })
-  currentUserId = ADMIN_ID
-  assert.deepEqual((await request(app.base, 'GET', '/admin/me', { headers })).body, { isAdmin: true })
-})
-
 test('admin routes refuse signed out users and non admins', async () => {
   assert.equal((await request(app.base, 'GET', '/admin/users')).status, 401)
   const res = await request(app.base, 'GET', '/admin/users', { headers })

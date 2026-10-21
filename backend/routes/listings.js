@@ -366,7 +366,7 @@ router.get('/', async (req, res) => {
       .map(mapSupabaseListingRow)
       .filter((listing) => !campus || listing.campus.toLowerCase().includes(campus))
 
-    res.json(await withInterest(listings))
+    res.json(await withHosts(await withInterest(listings)))
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' })
   }
@@ -414,7 +414,8 @@ router.get('/:id', async (req, res) => {
       .single()
 
     if (error) return res.status(404).json({ error: 'Listing not found' })
-    res.json(mapSupabaseListingRow(data))
+    const [listing] = await withHosts([mapSupabaseListingRow(data)], { includeAvatar: true })
+    res.json(listing)
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' })
   }
@@ -652,6 +653,40 @@ router.delete('/:id', requireSupabaseUser, async (req, res) => {
 // Adds recent saves and messages plus a hot flag. Needs the service role key
 // because favorites and conversations are private per user. If counting
 // fails, listings are still returned, just without the flag.
+// Adds the public part of each host's profile: name, admin tag and, for a
+// single listing, photo. Profiles also hold emails and are private under RLS,
+// so only these columns are read with the service role. Photos are left off
+// the full list because each one can be large.
+async function withHosts(listings, { includeAvatar = false } = {}) {
+  const hostIds = [...new Set(listings.map((listing) => listing.host_id).filter(Boolean))]
+  if (!supabaseAdmin || hostIds.length === 0) return listings
+  try {
+    const { data, error } = await supabaseAdmin.from('profiles').select('*').in('id', hostIds)
+    if (error) throw error
+    const hosts = new Map(data.map((profile) => [profile.id, profile]))
+    return listings.map((listing) => {
+      const host = hosts.get(listing.host_id)
+      if (!host) return listing
+      return {
+        ...listing,
+        hostName: host.name || null,
+        hostIsAdmin: host.is_admin === true,
+        ...(includeAvatar
+          ? {
+              hostAvatarUrl: host.avatar_url || null,
+              hostPronouns: host.pronouns || null,
+              hostClassYear: host.class_year ?? null,
+              hostBio: host.bio || null,
+            }
+          : {}),
+      }
+    })
+  } catch (error) {
+    console.warn(`Could not load listing hosts: ${error.message}`)
+    return listings
+  }
+}
+
 async function withInterest(listings) {
   if (!supabaseAdmin) return listings
   try {

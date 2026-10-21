@@ -14,11 +14,6 @@ import { syncRutgersMarketplaceListings } from '../rutgersMarketplaceImporter.js
 const router = Router()
 const BAN_DURATION = '876000h'
 
-// Lets the site show admin links. Any signed in user may ask about themselves.
-router.get('/me', requireSupabaseUser, async (req, res) => {
-  res.json({ isAdmin: await isAdminUser(req.user?.id) })
-})
-
 router.use(requireSupabaseUser, requireAdmin)
 
 const sendError = (res, error, status = 400) =>
