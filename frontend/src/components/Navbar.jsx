@@ -3,6 +3,8 @@ import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
 import { isRutgersEmail } from "../utils/rutgersEmail";
+import AccountBadge from "./AccountBadge";
+import Avatar from "./ui/Avatar";
 import Icon from "./ui/Icon";
 import LogoMark from "./ui/LogoMark";
 
@@ -40,7 +42,7 @@ function accountStatus(user) {
 
 // Avatar button whose menu holds the account status and Sign out, so the
 // header keeps its room for the main tabs.
-function AccountMenu({ user, isAdmin, onSignOut }) {
+function AccountMenu({ user, profile, isAdmin, onSignOut }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
   const status = accountStatus(user);
@@ -70,7 +72,12 @@ function AccountMenu({ user, isAdmin, onSignOut }) {
         onClick={() => setOpen((value) => !value)}
         className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-sm font-bold uppercase text-midnight shadow-card transition hover:bg-surface-low"
       >
-        {user.email?.[0] ?? "?"}
+        <Avatar
+          src={profile?.avatarUrl}
+          name={profile?.name}
+          email={user.email}
+          className={`h-full w-full text-sm ${isAdmin ? "ring-2 ring-midnight ring-offset-2 ring-offset-canvas" : ""}`}
+        />
         <span
           className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full ring-2 ring-canvas ${
             status.verified ? "bg-verified text-white" : "bg-amber-400 text-white"
@@ -86,7 +93,10 @@ function AccountMenu({ user, isAdmin, onSignOut }) {
           className="absolute right-0 top-12 w-64 rounded-2xl border border-slate-200 bg-white p-2 shadow-lift"
         >
           <div className="px-3 py-2">
-            <p className="truncate text-sm font-semibold text-midnight">{user.email}</p>
+            {profile?.name && (
+              <p className="truncate text-sm font-bold text-midnight">{profile.name}</p>
+            )}
+            <p className="truncate text-sm font-semibold text-slate-600">{user.email}</p>
             <p
               className={`mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em] ${
                 status.verified ? "bg-verified-soft text-verified" : "bg-amber-50 text-amber-800"
@@ -95,7 +105,21 @@ function AccountMenu({ user, isAdmin, onSignOut }) {
               <Icon name={status.verified ? "verified" : "person"} filled className="text-[14px]" />
               {status.label}
             </p>
+            {isAdmin && (
+              <div className="mt-1.5">
+                <AccountBadge isAdmin />
+              </div>
+            )}
           </div>
+          <Link
+            role="menuitem"
+            to="/profile"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-midnight hover:bg-surface-low"
+          >
+            <Icon name="account_circle" className="text-[18px] text-slate-600" />
+            Profile
+          </Link>
           <Link
             role="menuitem"
             to="/my-listings"
@@ -135,7 +159,7 @@ function AccountMenu({ user, isAdmin, onSignOut }) {
 }
 
 function Navbar() {
-  const { user, isAdmin, isConfigured } = useAuth();
+  const { user, profile, isAdmin, isConfigured } = useAuth();
   const signOut = async () => {
     if (!isConfigured || !supabase) return;
     await supabase.auth.signOut();
@@ -177,7 +201,7 @@ function Navbar() {
             Post Sublet
           </Link>
           {user ? (
-            <AccountMenu user={user} isAdmin={isAdmin} onSignOut={signOut} />
+            <AccountMenu user={user} profile={profile} isAdmin={isAdmin} onSignOut={signOut} />
           ) : (
             <Link
               to="/login"

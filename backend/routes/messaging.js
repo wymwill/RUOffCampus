@@ -470,6 +470,8 @@ function mapParticipant(participant) {
             typeof participant.profiles.is_rutgers === 'boolean'
               ? participant.profiles.is_rutgers
               : null,
+          is_admin: participant.profiles.is_admin === true,
+          pronouns: participant.profiles.pronouns ?? null,
         }
       : null,
   }

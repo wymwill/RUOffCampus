@@ -17,6 +17,7 @@ import MyListingsPage from "./pages/MyListingsPage";
 import EditListingPage from "./pages/EditListingPage";
 import FeedbackPage from "./pages/FeedbackPage";
 import AdminPage from "./pages/AdminPage";
+import ProfilePage from "./pages/ProfilePage";
 
 const router = createBrowserRouter([
   {
@@ -83,6 +84,10 @@ const router = createBrowserRouter([
       {
         path: "admin",
         element: <AdminPage />,
+      },
+      {
+        path: "profile",
+        element: <ProfilePage />,
       },
     ],
   },

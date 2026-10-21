@@ -98,6 +98,7 @@ function InboxPage() {
                       {getParticipantLabel(conversation)}
                       <AccountBadge
                         isRutgers={conversation.other_participants?.[0]?.profile?.is_rutgers}
+                        isAdmin={conversation.other_participants?.[0]?.profile?.is_admin}
                         compact
                       />
                     </p>
