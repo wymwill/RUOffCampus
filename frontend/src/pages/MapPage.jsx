@@ -462,7 +462,7 @@ function MapPage() {
 
   return (
     <div className="flex h-[calc(100dvh-var(--header-h))] flex-col overflow-hidden">
-      <FilterBar view="map" sticky={false} resultCount={isLoading ? null : mappableListings.length} />
+      <FilterBar sticky={false} resultCount={isLoading ? null : mappableListings.length} />
 
       {/* isolate keeps Leaflet panes and popups below the sticky header. */}
       <div className="relative isolate flex-1 overflow-hidden bg-surface-low">

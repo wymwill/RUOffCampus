@@ -43,8 +43,12 @@ function Footer() {
       <div className="mx-auto grid max-w-[1600px] gap-10 px-4 py-12 md:grid-cols-2 md:px-8 lg:grid-cols-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <LogoMark className="h-9 w-9 text-scarlet" />
-            <span className="text-lg font-semibold text-midnight">ScarletSublet</span>
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-scarlet">
+              <LogoMark className="h-7 w-7 text-white" />
+            </span>
+            <span className="text-lg font-semibold text-midnight">
+              <span className="text-scarlet">Scarlet</span>Sublet
+            </span>
           </div>
           <p className="mt-3 text-sm leading-relaxed text-slate-600">
             Sublets and off-campus listings near Rutgers New Brunswick. Anyone can join, and

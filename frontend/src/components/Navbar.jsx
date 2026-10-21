@@ -8,6 +8,7 @@ import LogoMark from "./ui/LogoMark";
 
 const NAV_LINKS = [
   { to: "/listings", label: "Listings", end: true },
+  { to: "/map", label: "Map View" },
   { to: "/favorites", label: "Favorites" },
   { to: "/inbox", label: "Inbox" },
 ];
@@ -15,9 +16,13 @@ const NAV_LINKS = [
 function Brand() {
   return (
     <Link to="/" className="flex shrink-0 items-center gap-2.5">
-      <LogoMark className="h-10 w-10 text-scarlet" />
+      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-scarlet shadow-scarlet">
+        <LogoMark className="h-8 w-8 text-white" />
+      </span>
       <span className="hidden flex-col leading-tight sm:flex">
-        <span className="text-lg font-semibold text-midnight">ScarletSublet</span>
+        <span className="text-lg font-semibold text-midnight">
+          <span className="text-scarlet">Scarlet</span>Sublet
+        </span>
         <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-scarlet">
           New Brunswick Living
         </span>

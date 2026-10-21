@@ -21,7 +21,7 @@ function ListingPage() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <FilterBar view="list" resultCount={isLoading ? null : filteredListings.length} />
+      <FilterBar resultCount={isLoading ? null : filteredListings.length} />
 
       <main className="mx-auto max-w-[1600px] px-4 py-8 md:px-8">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">

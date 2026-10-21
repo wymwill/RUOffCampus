@@ -1,5 +1,4 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import { useFilters } from "../context/FiltersContext";
 import {
   countMoreFilters,
@@ -44,42 +43,13 @@ function chipClass(isActive, wraps = false) {
   return `${chipBase} ${shape} ${isActive ? chipActive : chipIdle}`;
 }
 
-function ViewToggle({ view }) {
-  const item = (isActive) =>
-    `flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition ${
-      isActive ? "bg-midnight text-white shadow-sm" : "text-slate-500 hover:text-midnight"
-    }`;
-  return (
-    <div className="flex shrink-0 items-center rounded-full bg-surface-low p-1 shadow-inner">
-      <Link
-        to="/listings"
-        aria-label="List view"
-        className={item(view === "list")}
-        aria-current={view === "list" ? "page" : undefined}
-      >
-        <Icon name="view_list" className="text-[16px]" />
-        <span className="hidden sm:inline">List</span>
-      </Link>
-      <Link
-        to="/map"
-        aria-label="Map view"
-        className={item(view === "map")}
-        aria-current={view === "map" ? "page" : undefined}
-      >
-        <Icon name="map" className={`text-[16px] ${view === "map" ? "text-emerald-300" : ""}`} />
-        <span className="hidden sm:inline">Map</span>
-      </Link>
-    </div>
-  );
-}
-
 /**
  * Search and filter control center shared by the Listings and Map pages.
- * Row one has search, the List and Map switch and the filters toggle. Row two
- * holds the main filter chips. Chips that don't fit the screen move into the
- * "More filters" panel with the less common filters, so the row never wraps.
+ * Row one has search. Row two holds the main filter chips. Chips that don't
+ * fit the screen move into the "More filters" panel with the less common
+ * filters, so the row never wraps.
  */
-function FilterBar({ view = "list", resultCount, sticky = true }) {
+function FilterBar({ resultCount, sticky = true }) {
   const { filters, setFilters } = useFilters();
   const [moreOpen, setMoreOpen] = useState(false);
   const [barKeys, setBarKeys] = useState(BAR_FILTERS);
@@ -332,7 +302,7 @@ function FilterBar({ view = "list", resultCount, sticky = true }) {
           </div>
         </div>
 
-        {/* Search and the List and Map switch never wrap. Search shrinks first. */}
+        {/* Search never wraps and shrinks to fit. */}
         <div className="flex items-center gap-2 pt-3 sm:gap-3">
           <label className="relative min-w-0 flex-1 md:max-w-xl">
             <span className="sr-only">Search listings</span>
@@ -349,8 +319,6 @@ function FilterBar({ view = "list", resultCount, sticky = true }) {
               className="w-full rounded-full bg-surface-low py-2 pl-10 pr-4 text-sm text-midnight shadow-inner outline-none transition placeholder:text-slate-500 focus:bg-surface focus:ring-2 focus:ring-midnight"
             />
           </label>
-          <div className="hidden flex-1 md:block" />
-          <ViewToggle view={view} />
         </div>
 
         {/* Chips that fit, then Reset, then the filters button, which always
