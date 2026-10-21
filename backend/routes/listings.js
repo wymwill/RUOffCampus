@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { supabase, supabaseAdmin, isSupabaseConfigured, createSupabaseClientWithToken } from '../supabaseClient.js'
 import { requireSupabaseUser } from '../middleware/requireSupabaseUser.js'
+import { isAdminUser } from '../middleware/requireAdmin.js'
 import {
   createLocalListing,
   deleteLocalListing,
@@ -45,7 +46,7 @@ const EDITABLE_LISTING_FIELDS = [
   'status',
 ]
 
-function pickEditableFields(body = {}) {
+export function pickEditableFields(body = {}) {
   const updates = {}
   for (const field of EDITABLE_LISTING_FIELDS) {
     if (body[field] !== undefined) updates[field] = body[field]
@@ -53,7 +54,7 @@ function pickEditableFields(body = {}) {
   return updates
 }
 
-function validateListingUpdates(updates) {
+export function validateListingUpdates(updates) {
   if (Object.keys(updates).length === 0) return 'No updatable fields provided'
   if ('title' in updates && !String(updates.title ?? '').trim()) return 'Title cannot be empty'
   if ('price_monthly' in updates && !(Number(updates.price_monthly) > 0)) {
@@ -81,7 +82,7 @@ function localOwnershipError(existing, req) {
 
 // Campus and distance come from the nearest student center when the
 // listing has coordinates. See studentCenters.js.
-function mapSupabaseListingRow(data) {
+export function mapSupabaseListingRow(data) {
   return withNearestStudentCenter({
     id: data.id,
     title: data.title,
@@ -117,6 +118,17 @@ function mapSupabaseListingRow(data) {
     created_at: data.created_at,
     host_id: data.host_id,
   })
+}
+
+// Hosts change their own listings as themselves, so RLS still applies. Admins
+// may change anyone's listing, which RLS doesn't allow, so they go through
+// the service role after isAdminUser has checked them.
+function clientForListingChange(req, isAdmin) {
+  if (isAdmin) return supabaseAdmin
+  const accessToken = req.headers.authorization?.startsWith('Bearer ')
+    ? req.headers.authorization.slice(7)
+    : null
+  return createSupabaseClientWithToken(accessToken)
 }
 
 // Paused and taken listings stay visible to their host but leave search.
@@ -563,7 +575,9 @@ router.put('/:id', requireSupabaseUser, async (req, res) => {
       return res.status(404).json({ error: 'Listing not found' })
     }
 
-    if (String(existing.host_id) !== String(req.user.id)) {
+    const isHost = String(existing.host_id) === String(req.user.id)
+    const isAdmin = !isHost && (await isAdminUser(req.user.id))
+    if (!isHost && !isAdmin) {
       return res.status(403).json({ error: 'You can only edit your own listings.' })
     }
 
@@ -573,14 +587,7 @@ router.put('/:id', requireSupabaseUser, async (req, res) => {
       return res.status(400).json({ error: validationError })
     }
 
-    const accessToken =
-      req.headers.authorization?.startsWith('Bearer ')
-        ? req.headers.authorization.slice(7)
-        : null
-
-    const authenticatedSupabase = createSupabaseClientWithToken(accessToken)
-
-    const { data, error } = await authenticatedSupabase
+    const { data, error } = await clientForListingChange(req, isAdmin)
       .from('listings')
       .update(updates)
       .eq('id', id)
@@ -624,18 +631,16 @@ router.delete('/:id', requireSupabaseUser, async (req, res) => {
       return res.status(404).json({ error: 'Listing not found' })
     }
 
-    if (String(existing.host_id) !== String(req.user.id)) {
+    const isHost = String(existing.host_id) === String(req.user.id)
+    const isAdmin = !isHost && (await isAdminUser(req.user.id))
+    if (!isHost && !isAdmin) {
       return res.status(403).json({ error: 'You can only delete your own listings.' })
     }
 
-    const accessToken =
-      req.headers.authorization?.startsWith('Bearer ')
-        ? req.headers.authorization.slice(7)
-        : null
-
-    const authenticatedSupabase = createSupabaseClientWithToken(accessToken)
-
-    const { error } = await authenticatedSupabase.from('listings').delete().eq('id', id)
+    const { error } = await clientForListingChange(req, isAdmin)
+      .from('listings')
+      .delete()
+      .eq('id', id)
 
     if (error) return res.status(400).json({ error: error.message })
     res.status(204).send()
