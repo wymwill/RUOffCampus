@@ -152,9 +152,14 @@ function FocusListing({ request }) {
   return null;
 }
 
+// onChange gets a state setter. Unchanged bounds keep the previous value so
+// a moveend without movement does not re-render the page. See ClusteredListingPins.
 function BoundsWatcher({ onChange }) {
   const map = useMapEvents({
-    moveend: () => onChange(map.getBounds()),
+    moveend: () => {
+      const bounds = map.getBounds();
+      onChange((prev) => (prev?.equals(bounds) ? prev : bounds));
+    },
   });
   useEffect(() => {
     onChange(map.getBounds());
@@ -244,10 +249,16 @@ function ClusteredListingPins({ listings, onSelect }) {
     zoom: map.getZoom(),
   }));
 
-  useMapEvents({
-    moveend: () => setViewState({ bounds: map.getBounds(), zoom: map.getZoom() }),
-    zoomend: () => setViewState({ bounds: map.getBounds(), zoom: map.getZoom() }),
-  });
+  // Leaflet fires moveend even when the view did not change, for example
+  // when an open popup re-checks its position after a render. Keeping the
+  // old state then stops a render loop that blocks leaving the page.
+  const updateView = () =>
+    setViewState((prev) => {
+      const bounds = map.getBounds();
+      const zoom = map.getZoom();
+      return prev.zoom === zoom && prev.bounds.equals(bounds) ? prev : { bounds, zoom };
+    });
+  useMapEvents({ moveend: updateView, zoomend: updateView });
 
   const clusterIndex = useMemo(() => {
     const index = new Supercluster({ maxZoom: 17, radius: 60 });
