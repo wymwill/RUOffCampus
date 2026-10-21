@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import listingsRouter from './routes/listings.js'
 import messagingRouter from './routes/messaging.js'
 import feedbackRouter from './routes/feedback.js'
+import adminRouter from './routes/admin.js'
 import { isSupabaseConfigured, supabaseAdmin } from './supabaseClient.js'
 import {
   warmRutgersListingCache,
@@ -53,6 +54,7 @@ api.get('/health', async (req, res) => {
 api.use('/listings', listingsRouter)
 api.use('/messages', messagingRouter)
 api.use('/feedback', feedbackRouter)
+api.use('/admin', adminRouter)
 
 app.use('/api', api)
 app.use(api)

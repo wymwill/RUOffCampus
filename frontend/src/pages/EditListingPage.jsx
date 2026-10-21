@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { getAdminListing } from "../api/adminApi";
 import { getMyListings } from "../api/listingsApi";
 import AddListingForm from "../components/AddListingForm";
 import SignInRequired from "../components/SignInRequired";
@@ -9,21 +10,24 @@ import { useListings } from "../context/ListingsContext";
 function EditListingPage() {
   const { listingId } = useParams();
   const navigate = useNavigate();
-  const { user, session, isReady } = useAuth();
+  const { user, session, isAdmin, isReady } = useAuth();
   const { refreshListings } = useListings();
   const [listing, setListing] = useState(null);
   const [error, setError] = useState("");
   const accessToken = session?.access_token;
 
   // Load through /listings/mine so only the host can open the editor,
-  // and paused or taken listings can still be edited.
+  // and paused or taken listings can still be edited. Admins can open any
+  // listing, and the API checks that again when saving.
   useEffect(() => {
     if (!accessToken) return undefined;
     let cancelled = false;
     getMyListings({ accessToken })
-      .then((mine) => {
+      .then(async (mine) => {
+        const found =
+          mine.find((item) => String(item.id) === String(listingId)) ??
+          (isAdmin ? await getAdminListing(listingId, { accessToken }) : null);
         if (cancelled) return;
-        const found = mine.find((item) => String(item.id) === String(listingId));
         if (found) setListing(found);
         else setError("This listing doesn't exist or isn't yours to edit.");
       })
@@ -33,7 +37,11 @@ function EditListingPage() {
     return () => {
       cancelled = true;
     };
-  }, [accessToken, listingId]);
+  }, [accessToken, isAdmin, listingId]);
+
+  // Admins editing someone else's listing go back to the admin page.
+  const backPath =
+    isAdmin && listing && String(listing.host_id) !== String(user?.id) ? "/admin" : "/my-listings";
 
   if (!isReady) {
     return (
@@ -57,7 +65,7 @@ function EditListingPage() {
           </h1>
         </div>
         <Link
-          to="/my-listings"
+          to={backPath}
           className="rounded-full border border-slate-300 px-5 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
         >
           Cancel
@@ -76,7 +84,7 @@ function EditListingPage() {
           initialListing={listing}
           onSaved={() => {
             refreshListings();
-            navigate("/my-listings");
+            navigate(backPath);
           }}
         />
       )}

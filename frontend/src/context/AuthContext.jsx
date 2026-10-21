@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { getAdminStatus } from "../api/adminApi";
 import { isSupabaseBrowserConfigured, supabase } from "../lib/supabaseClient";
 
 const TOKEN_KEY = "sublet_access_token";
@@ -48,14 +49,34 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
+  // Only shows or hides admin links. The API checks admin access itself.
+  const [adminUserId, setAdminUserId] = useState(null);
+  const accessToken = session?.access_token;
+  const userId = session?.user?.id;
+  useEffect(() => {
+    if (!accessToken || !userId) return undefined;
+    let cancelled = false;
+    getAdminStatus({ accessToken })
+      .then((isAdmin) => {
+        if (!cancelled) setAdminUserId(isAdmin ? userId : null);
+      })
+      .catch(() => {
+        if (!cancelled) setAdminUserId(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, userId]);
+
   const value = useMemo(
     () => ({
       session,
       user: session?.user ?? null,
+      isAdmin: Boolean(userId) && adminUserId === userId,
       isReady,
       isConfigured: isSupabaseBrowserConfigured,
     }),
-    [isReady, session]
+    [adminUserId, isReady, session, userId]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -179,7 +179,7 @@ export async function removeFavoriteListing(listingId, options = {}) {
   return data;
 }
 
-async function requestJson(path, { method = "GET", body, accessToken, fallbackError }) {
+export async function requestJson(path, { method = "GET", body, accessToken, fallbackError }) {
   const response = await fetchWithTimeout(`${getListingsApiBase()}${path}`, {
     method,
     headers: {
