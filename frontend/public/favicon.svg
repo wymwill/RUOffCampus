@@ -2,8 +2,8 @@
   <rect width="64" height="64" rx="14" fill="#cc0033"/>
   <mask id="r" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64">
     <rect width="64" height="64" fill="#fff"/>
-    <path d="M17 26.5 H36 C43 26.5 47 30 47 35 C47 39 44.5 41.8 40.5 42.8 L44 52.5 H47 V56.5 H33.5 V52.5 H35 L32.5 44.5 H31 V52.5 H34 V56.5 H17 V52.5 H20.5 V30.5 H17 Z" fill="#000"/>
-    <path d="M31 30.5 H34.5 C37 30.5 38.3 32.3 38.3 35 C38.3 37.7 37 39.5 34.5 39.5 H31 Z" fill="#fff"/>
+    <path d="M 17 22.5 H 36 C 43 22.5 47 26 47 31 C 47 35 44.5 37.8 40.5 38.8 L 44 48.5 H 47 V 52.5 H 33.5 V 48.5 H 35 L 32.5 40.5 H 31 V 48.5 H 34 V 52.5 H 17 V 48.5 H 20.5 V 26.5 H 17 Z" fill="#000"/>
+    <path d="M 31 26.5 H 34.5 C 37 26.5 38.3 28.3 38.3 31 C 38.3 33.7 37 35.5 34.5 35.5 H 31 Z" fill="#fff"/>
   </mask>
   <path d="M6 31 L32 8 L42 16.8 V11 H49 V23 L58 31 H52 V56 H12 V31 Z" fill="#fff" mask="url(#r)"/>
 </svg>
