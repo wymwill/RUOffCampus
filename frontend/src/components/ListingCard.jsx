@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
-import { formatAdded, isAvailableNow, termBadge } from "../utils/listingBadges";
+import { formatAdded, formatAvailability } from "../utils/listingBadges";
 import {
+  addressRepeatsTitle,
   formatAmenityLabel,
   formatListingPrice,
   getListingMapPath,
@@ -10,30 +11,23 @@ import ListingTrust from "./ListingTrust";
 import MessageHostButton from "./MessageHostButton";
 import Icon from "./ui/Icon";
 
-function formatDate(dateStr) {
-  const d = new Date(`${String(dateStr).slice(0, 10)}T00:00:00`);
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
 function ListingCard({ listing, isFavorited, onToggleFavorite }) {
   const normalizedListing = normalizeListing(listing);
   const navigate = useNavigate();
   const mapPath = getListingMapPath(normalizedListing);
-  const term = termBadge(normalizedListing.available_from);
   const added = formatAdded(normalizedListing.created_at);
   const stop = normalizedListing.nearestStop;
   const activeAmenities = Object.entries(normalizedListing.amenities)
     .filter(([, value]) => value)
     .map(([key]) => formatAmenityLabel(key));
-  const availRange = normalizedListing.available_from
-    ? isAvailableNow(normalizedListing.available_from)
-      ? normalizedListing.available_to
-        ? `Available now to ${formatDate(normalizedListing.available_to)}`
-        : "Available now"
-      : normalizedListing.available_to
-      ? `${formatDate(normalizedListing.available_from)} to ${formatDate(normalizedListing.available_to)}`
-      : `From ${formatDate(normalizedListing.available_from)}`
-    : null;
+  const availability = formatAvailability(
+    normalizedListing.available_from,
+    normalizedListing.available_to
+  );
+  const location = [
+    normalizedListing.campus,
+    addressRepeatsTitle(normalizedListing) ? null : normalizedListing.address,
+  ].filter(Boolean);
 
   const specs = [
     normalizedListing.beds === 0 ? "Studio" : `${normalizedListing.beds} Bed`,
@@ -61,7 +55,7 @@ function ListingCard({ listing, isFavorited, onToggleFavorite }) {
   return (
     <Link to={`/listings/${normalizedListing.id}`} className="group block h-full">
       <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lift">
-        <div className="relative aspect-[16/10] overflow-hidden bg-surface-high">
+        <div className="relative aspect-[16/9] overflow-hidden bg-surface-high">
           <img
             src={normalizedListing.image}
             alt={normalizedListing.title}
@@ -103,11 +97,13 @@ function ListingCard({ listing, isFavorited, onToggleFavorite }) {
             />
           </button>
 
-          {term && (
-            <span className="absolute bottom-4 left-4 rounded-full bg-midnight/80 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white backdrop-blur-sm">
-              {term}
-            </span>
-          )}
+          <span
+            className={`absolute bottom-4 left-4 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white backdrop-blur-sm ${
+              normalizedListing.isImported ? "bg-midnight/80" : "bg-scarlet/90"
+            }`}
+          >
+            {normalizedListing.isImported ? "Marketplace lease" : "Student sublet"}
+          </span>
 
           {mapPath && (
             <button
@@ -121,7 +117,7 @@ function ListingCard({ listing, isFavorited, onToggleFavorite }) {
           )}
         </div>
 
-        <div className="flex flex-1 flex-col p-6">
+        <div className="flex flex-1 flex-col p-5">
           <div className="flex items-start justify-between gap-3">
             <h2 className="text-lg font-semibold leading-6 text-midnight">
               {normalizedListing.title}
@@ -131,9 +127,11 @@ function ListingCard({ listing, isFavorited, onToggleFavorite }) {
             </span>
           </div>
 
-          <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
-            {[normalizedListing.campus, normalizedListing.address].filter(Boolean).join(" · ")}
-          </p>
+          {location.length > 0 && (
+            <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-600">
+              {location.join(" · ")}
+            </p>
+          )}
 
           <p className="mt-3 text-sm text-slate-600">{specs.join(" • ")}</p>
 
@@ -145,11 +143,11 @@ function ListingCard({ listing, isFavorited, onToggleFavorite }) {
           )}
 
           {activeAmenities.length > 0 && (
-            <p className="mt-3 text-sm text-slate-500">{activeAmenities.join(" • ")}</p>
+            <p className="mt-3 text-sm text-slate-600">{activeAmenities.join(" • ")}</p>
           )}
 
           {added && (
-            <p className="mt-2 flex items-center gap-1 text-xs text-slate-500" title={added.date}>
+            <p className="mt-2 flex items-center gap-1 text-xs text-slate-600" title={added.date}>
               <Icon name="schedule" className="text-[15px]" />
               Added {added.relative}
             </p>
@@ -159,9 +157,14 @@ function ListingCard({ listing, isFavorited, onToggleFavorite }) {
 
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4">
             <ListingTrust listing={normalizedListing} />
-            {availRange && (
-              <span className="text-xs font-semibold text-scarlet">{availRange}</span>
-            )}
+            <span
+              className={`flex items-center gap-1 text-xs font-semibold ${
+                availability === "Dates not listed" ? "text-slate-600" : "text-midnight"
+              }`}
+            >
+              <Icon name="calendar_month" className="text-[15px] text-scarlet" />
+              {availability}
+            </span>
           </div>
 
           {normalizedListing.host_id && !normalizedListing.isImported && (
