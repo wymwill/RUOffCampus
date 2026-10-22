@@ -29,9 +29,7 @@ export function ListingsProvider({ children }) {
         })
       );
 
-      startTransition(() => {
-        setListings(nextListings);
-      });
+      setListings(nextListings);
     } catch (loadError) {
       setError(loadError.message || "Could not load listings.");
     } finally {
@@ -56,9 +54,7 @@ export function ListingsProvider({ children }) {
 
         if (isCancelled) return;
 
-        startTransition(() => {
-          setListings(nextListings);
-        });
+        setListings(nextListings);
       } catch (loadError) {
         if (isCancelled) return;
         setError(loadError.message || "Could not load listings.");

@@ -6,13 +6,46 @@ import ListingImageGallery from "../components/ListingImageGallery";
 import AdminListingBar from "../components/AdminListingBar";
 import Icon from "../components/ui/Icon";
 import { useListings } from "../context/ListingsContext";
+import { getListingDetailState } from "../utils/listingDetailState";
 
 const CardInfo = () => {
   const params = useParams();
-  const { getListingById } = useListings();
+  const { getListingById, isLoading, error, refreshListings } = useListings();
   const foundListing = getListingById(params.listingId);
 
-  if (foundListing) {
+  const state = getListingDetailState({ listing: foundListing, isLoading, error });
+
+  if (state === "loading" || state === "error") {
+    return (
+      <main className="mx-auto max-w-[1600px] px-4 py-12 md:px-8">
+        <div
+          role={state === "error" ? "alert" : "status"}
+          className="rounded-2xl border border-slate-200 bg-white p-8 text-slate-600 shadow-card"
+        >
+          <h1 className="text-xl font-bold text-midnight">
+            {state === "loading" ? "Loading listing..." : "Could not load this listing."}
+          </h1>
+          {state === "error" && (
+            <>
+              <p className="mt-2">{error}</p>
+              <button
+                type="button"
+                onClick={refreshListings}
+                className="mt-4 rounded-full bg-scarlet px-5 py-2 font-semibold text-white hover:bg-scarlet-dark"
+              >
+                Try again
+              </button>
+            </>
+          )}
+          <Link to="/listings" className="mt-4 block text-sm font-semibold text-scarlet hover:underline">
+            Back to listings
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  if (state === "ready") {
     return (
       <div className="bg-canvas">
         <div className="mx-auto max-w-[1600px] px-4 py-8 md:px-8">
